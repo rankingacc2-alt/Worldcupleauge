@@ -1075,18 +1075,6 @@ function PredModal({matchId,onClose}){
               ))}
             </div>
           </div>
-          {squad.length>0&&<>
-            <div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">First goal scorer</div>
-              <div className="flex flex-wrap gap-2">
-                {squad.map(p=>(
-                  <button key={p.id} onClick={()=>set({firstScorer:draft.firstScorer===p.id?null:p.id})} className={`press flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold transition-all ${draft.firstScorer===p.id?'border-em bg-em/15 text-white':'border-white/8 bg-white/4 text-slate-300 hover:border-white/20'}`}>
-                    <Flag iso={TEAM[p.team]?.iso} size={16}/>{p.name.split(' ').pop()}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>}
         </>}
         {m.status==='live'&&(
           <div className="space-y-3">
