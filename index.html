@@ -665,7 +665,7 @@ function Provider({children}){
     return false;
   },[tournaments,scores.total,toast]);
 
-  const ctx={user,setUser,preds,savePred,matches,setMatches,tournaments,setTournaments,tPicks,setTPicks,friends,addFriend,removeFriend,sendFriendRequest,acceptFriendRequest,myCode,virtualFriends,palette,setPalette,PALETTES,PALETTE_NAMES,toasts,toast,notifications,setNotifications,pushNotif,scores,leaderboard,myRank,unread,signOut,joinByCode,earnedBadgeIds,activeBadge,dismissBadge,truth,setTruth,wcTeams};
+  const ctx={user,setUser,preds,savePred,matches,setMatches,tournaments,setTournaments,tPicks,setTPicks,friends,addFriend,removeFriend,sendFriendRequest,acceptFriendRequest,myCode,virtualFriends,palette,setPalette,PALETTES,PALETTE_NAMES,toasts,toast,notifications,setNotifications,pushNotif,scores,leaderboard,myRank,unread,signOut,joinByCode,earnedBadgeIds,activeBadge,dismissBadge,truth,setTruth,wcTeams,fbUsers};
   return(
     <Ctx.Provider value={ctx}>
       {children}
