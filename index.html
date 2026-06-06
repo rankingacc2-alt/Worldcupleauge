@@ -559,7 +559,7 @@ function Provider({children}){
         if(!members)return;
         setTournaments(ts=>ts.map(x=>{
           if(x.fbCode!==t.fbCode)return x;
-          const mArr=Object.entries(members).map(([k,v])=>({...v,isYou:k===myCode}));
+          const mArr=Object.entries(members).map(([k,v])=>({...v,memberCode:k,isYou:k===myCode}));
           return{...x,members:mArr};
         }));
       });
@@ -1369,7 +1369,7 @@ function ProfilePage({setPage,openMatch}){
 
 /* ── TOURNAMENT PAGE ── */
 function TournamentPage({autoJoinCode,onAutoJoinDone}){
-  const{tournaments,setTournaments,user,tPicks,setTPicks,toast,pushNotif,friends,joinByCode,scores,virtualFriends}=useWC();
+  const{tournaments,setTournaments,user,tPicks,setTPicks,toast,pushNotif,friends,joinByCode,scores,virtualFriends,fbUsers}=useWC();
   const[view,setView]=useState('list');
   const[activeId,setActiveId]=useState(null);
   const{myCode}=useWC();
@@ -1428,7 +1428,12 @@ function TournamentPage({autoJoinCode,onAutoJoinDone}){
         <div className="grid sm:grid-cols-2 gap-4">
           {tournaments.map(t=>{
             /* live points for user in this tournament */
-            const members=[...t.members].map(m=>m.isYou?{...m,pts:scores.total}:m).sort((a,b)=>b.pts-a.pts);
+            const members=[...t.members].map(m=>{
+              const fb=m.memberCode?fbUsers[m.memberCode]:null;
+              const name=m.name||fb?.name||'Player';
+              const avatar=m.avatar||fb?.avatar||'⚽';
+              return m.isYou?{...m,name,avatar,pts:scores.total}:{...m,name,avatar};
+            }).sort((a,b)=>b.pts-a.pts);
             const myPos=members.findIndex(m=>m.isYou)+1;
             return(
               <div key={t.id} className="glass rounded-2xl p-5 flex flex-col gap-4">
@@ -1479,8 +1484,13 @@ function TournamentPage({autoJoinCode,onAutoJoinDone}){
 
 /* ── TOURNAMENT DETAIL (PL-style standings) ── */
 function TournamentDetail({tourn,onBack,onPicks,scores}){
-  const{friends,setTournaments,toast,virtualFriends}=useWC();
-  const members=[...tourn.members].map(m=>m.isYou?{...m,pts:scores.total}:m).sort((a,b)=>b.pts-a.pts);
+  const{friends,setTournaments,toast,virtualFriends,fbUsers}=useWC();
+  const members=[...tourn.members].map(m=>{
+    const fb=m.memberCode?fbUsers[m.memberCode]:null;
+    const name=m.name||fb?.name||'Player';
+    const avatar=m.avatar||fb?.avatar||'⚽';
+    return m.isYou?{...m,name,avatar,pts:scores.total}:{...m,name,avatar};
+  }).sort((a,b)=>b.pts-a.pts);
   const{matches}=useWC();
   const totalMatches=matches.filter(m=>m.status==='finished').length;
   const[showAdd,setShowAdd]=useState(false);
