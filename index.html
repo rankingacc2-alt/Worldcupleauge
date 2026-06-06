@@ -1435,7 +1435,7 @@ function TournamentPage({autoJoinCode,onAutoJoinDone}){
           {tournaments.map(t=>{
             /* live points for user in this tournament */
             const members=[...t.members].map(m=>{
-              const fb=m.memberCode?fbUsers[m.memberCode]:null;
+              const fb=m.memberCode&&fbUsers?fbUsers[m.memberCode]:null;
               const name=m.name||fb?.name||'Player';
               const avatar=m.avatar||fb?.avatar||'⚽';
               return m.isYou?{...m,name,avatar,pts:scores.total}:{...m,name,avatar};
