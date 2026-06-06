@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>World Cup 2026 · Prediction League</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+var db,fbSet,fbUpdate,fbGet,fbPush,fbOn;
+try{
+  var _fbConfig={apiKey:"AIzaSyDckV3wAALRCeHrFfi53T7wQfROwhYk37Y",authDomain:"wc2026-2af17.firebaseapp.com",databaseURL:"https://wc2026-2af17-default-rtdb.firebaseio.com",projectId:"wc2026-2af17",storageBucket:"wc2026-2af17.firebasestorage.app",messagingSenderId:"770396430334",appId:"1:770396430334:web:a9fea3af4db31b6ad6eaaf"};
+  firebase.initializeApp(_fbConfig);
+  db=firebase.database();
+  fbSet=(path,data)=>db.ref(path).set(data);
+  fbUpdate=(path,data)=>db.ref(path).update(data);
+  fbGet=(path)=>db.ref(path).get().then(s=>s.val());
+  fbPush=(path,data)=>db.ref(path).push(data);
+  fbOn=(path,cb)=>{var r=db.ref(path);r.on('value',s=>cb(s.val()));return()=>r.off('value');};
+}catch(e){
+  console.warn('Firebase unavailable:',e);
+  fbSet=fbUpdate=fbGet=fbPush=()=>Promise.resolve(null);
+  fbOn=(_,cb)=>{cb(null);return()=>{};};
+}
+</script>
+<script>
+tailwind.config={theme:{extend:{
+  fontFamily:{sans:['Manrope','sans-serif'],display:['Sora','sans-serif']},
+  colors:{ink:{950:'#060c16',900:'#091120',850:'#0c1628',800:'#101e35'},em:'rgb(var(--c-em)/<alpha-value>)',gd:'rgb(var(--c-gd)/<alpha-value>)',bl:'rgb(var(--c-bl)/<alpha-value>)'},
+  boxShadow:{glow:'0 0 24px -4px rgb(var(--c-em)/0.4)'}
+}}};
+</script>
+<style>
+:root{--c-em:16 185 129;--c-gd:251 191 36;--c-bl:37 99 235}
+*{box-sizing:border-box;margin:0;padding:0}
+button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.press{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.pb-safe{padding-bottom:max(env(safe-area-inset-bottom,0px),8px);}
+@media(max-width:640px){.mobile-full{width:100%;}}
+html,body{background:#060c16;color:#e2e8f0;font-family:'Manrope',sans-serif;-webkit-font-smoothing:antialiased}
+.pitch{background:radial-gradient(ellipse 120% 60% at 80% -20%,rgb(37 99 235/.12),transparent 55%),radial-gradient(ellipse 80% 50% at -10% 60%,rgb(16 185 129/.10),transparent 55%),repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(255,255,255,.025) 59px,rgba(255,255,255,.025) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(255,255,255,.025) 59px,rgba(255,255,255,.025) 60px),#060c16}
+.glass{background:rgba(9,17,32,.82);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.07)}
+.glass2{background:rgba(9,17,32,.96);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.10)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:9px}
+@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pop{animation:popIn .28s cubic-bezier(.34,1.56,.64,1) both}
+.sup{animation:slideUp .3s ease both}
+.fade{animation:fadeIn .2s ease both}
+.live{animation:pulse 1.4s ease infinite}
+.press{transition:transform .08s,filter .1s;cursor:pointer}
+@media(hover:hover){.press:hover{filter:brightness(1.08)}}
+.press:active{transform:scale(.95)}
+input,select,textarea{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:.75rem;color:#e2e8f0;outline:none;padding:.75rem 1rem;width:100%;transition:border-color .15s;font-size:16px}
+input:focus,select:focus,textarea:focus{border-color:rgb(var(--c-em)/.6);box-shadow:0 0 0 3px rgb(var(--c-em)/.12)}
+input::placeholder{color:#4a5568}
+select option{background:#091120;color:#e2e8f0}
+.pl-row:nth-child(odd){background:rgba(255,255,255,.02)}
+</style>
+</head>
+<body class="pitch">
+<div id="root"></div>
+<div id="err" style="display:none;position:fixed;inset:0;background:#0a0a0a;color:#f87171;font-family:monospace;padding:24px;z-index:9999;overflow:auto;white-space:pre-wrap;font-size:13px"></div>
+<script>
+window.onerror=function(msg,src,line,col,err){
+  var d=document.getElementById('err');
+  d.style.display='block';
+  d.textContent='ERROR: '+msg+'\nLine: '+line+'\n\n'+(err&&err.stack?err.stack:'');
+};
+window.addEventListener('unhandledrejection',function(e){
+  var d=document.getElementById('err');
+  d.style.display='block';
+  d.textContent='PROMISE ERROR:\n'+(e.reason&&e.reason.stack?e.reason.stack:e.reason);
+});
+</script>
+<script type="text/babel">
+const { useState, useEffect, useContext, createContext, useRef, useCallback, useMemo } = React;
+
+/* ── DATA ── */
+// All 48 real FIFA World Cup 2026 teams — groups from actual December 2024 draw
+const TEAMS=[
+  // Group A
+  {id:'MEX',name:'Mexico',iso:'mx',group:'A'},{id:'ZAF',name:'South Africa',iso:'za',group:'A'},
+  {id:'KOR',name:'South Korea',iso:'kr',group:'A'},{id:'CZE',name:'Czech Republic',iso:'cz',group:'A'},
+  // Group B
+  {id:'CAN',name:'Canada',iso:'ca',group:'B'},{id:'SUI',name:'Switzerland',iso:'ch',group:'B'},
+  {id:'QAT',name:'Qatar',iso:'qa',group:'B'},{id:'BOS',name:'Bosnia & Herz.',iso:'ba',group:'B'},
+  // Group C
+  {id:'BRA',name:'Brazil',iso:'br',group:'C'},{id:'SCO',name:'Scotland',iso:'gb-sct',group:'C'},
+  {id:'MAR',name:'Morocco',iso:'ma',group:'C'},{id:'HAI',name:'Haiti',iso:'ht',group:'C'},
+  // Group D
+  {id:'USA',name:'USA',iso:'us',group:'D'},{id:'PAR',name:'Paraguay',iso:'py',group:'D'},
+  {id:'AUS',name:'Australia',iso:'au',group:'D'},{id:'TUR',name:'Turkey',iso:'tr',group:'D'},
+  // Group E
+  {id:'GER',name:'Germany',iso:'de',group:'E'},{id:'CIV',name:'Ivory Coast',iso:'ci',group:'E'},
+  {id:'ECU',name:'Ecuador',iso:'ec',group:'E'},{id:'CUR',name:'Curaçao',iso:'cw',group:'E'},
+  // Group F
+  {id:'NED',name:'Netherlands',iso:'nl',group:'F'},{id:'JPN',name:'Japan',iso:'jp',group:'F'},
+  {id:'TUN',name:'Tunisia',iso:'tn',group:'F'},{id:'SWE',name:'Sweden',iso:'se',group:'F'},
+  // Group G
+  {id:'IRN',name:'Iran',iso:'ir',group:'G'},{id:'NZL',name:'New Zealand',iso:'nz',group:'G'},
+  {id:'BEL',name:'Belgium',iso:'be',group:'G'},{id:'EGY',name:'Egypt',iso:'eg',group:'G'},
+  // Group H
+  {id:'KSA',name:'Saudi Arabia',iso:'sa',group:'H'},{id:'URU',name:'Uruguay',iso:'uy',group:'H'},
+  {id:'ESP',name:'Spain',iso:'es',group:'H'},{id:'CAP',name:'Cape Verde',iso:'cv',group:'H'},
+  // Group I
+  {id:'FRA',name:'France',iso:'fr',group:'I'},{id:'IRQ',name:'Iraq',iso:'iq',group:'I'},
+  {id:'NOR',name:'Norway',iso:'no',group:'I'},{id:'SEN',name:'Senegal',iso:'sn',group:'I'},
+  // Group J
+  {id:'ARG',name:'Argentina',iso:'ar',group:'J'},{id:'ALG',name:'Algeria',iso:'dz',group:'J'},
+  {id:'AUT',name:'Austria',iso:'at',group:'J'},{id:'JOR',name:'Jordan',iso:'jo',group:'J'},
+  // Group K
+  {id:'POR',name:'Portugal',iso:'pt',group:'K'},{id:'COL',name:'Colombia',iso:'co',group:'K'},
+  {id:'UZB',name:'Uzbekistan',iso:'uz',group:'K'},{id:'CON',name:'DR Congo',iso:'cd',group:'K'},
+  // Group L
+  {id:'ENG',name:'England',iso:'gb-eng',group:'L'},{id:'CRO',name:'Croatia',iso:'hr',group:'L'},
+  {id:'GHA',name:'Ghana',iso:'gh',group:'L'},{id:'PAN',name:'Panama',iso:'pa',group:'L'},
+  // Extra teams appearing in fixtures
+  {id:'ITA',name:'Italy',iso:'it'},{id:'CHI',name:'Chile',iso:'cl'},
+  {id:'POL',name:'Poland',iso:'pl'},{id:'SRB',name:'Serbia',iso:'rs'},
+  {id:'NGA',name:'Nigeria',iso:'ng'},{id:'JAM',name:'Jamaica',iso:'jm'},
+  {id:'HND',name:'Honduras',iso:'hn'},{id:'CMR',name:'Cameroon',iso:'cm'},
+  {id:'VEN',name:'Venezuela',iso:'ve'},{id:'DEN',name:'Denmark',iso:'dk'},
+];
+const TEAM=Object.fromEntries(TEAMS.map(t=>[t.id,t]));
+
+// Top players from WC 2026 teams for predictions
+const PLAYERS=[
+  {id:'mbappe',name:'Kylian Mbappé',team:'FRA',pos:'FW'},
+  {id:'messi',name:'Lionel Messi',team:'ARG',pos:'FW'},
+  {id:'lautaro',name:'Lautaro Martínez',team:'ARG',pos:'FW'},
+  {id:'vinicius',name:'Vinícius Jr.',team:'BRA',pos:'FW'},
+  {id:'rodrygo',name:'Rodrygo',team:'BRA',pos:'FW'},
+  {id:'kane',name:'Harry Kane',team:'ENG',pos:'FW'},
+  {id:'bellingham',name:'Jude Bellingham',team:'ENG',pos:'MF'},
+  {id:'yamal',name:'Lamine Yamal',team:'ESP',pos:'FW'},
+  {id:'pedri',name:'Pedri',team:'ESP',pos:'MF'},
+  {id:'morata',name:'Álvaro Morata',team:'ESP',pos:'FW'},
+  {id:'ronaldo',name:'Cristiano Ronaldo',team:'POR',pos:'FW'},
+  {id:'leao',name:'Rafael Leão',team:'POR',pos:'FW'},
+  {id:'gakpo',name:'Cody Gakpo',team:'NED',pos:'FW'},
+  {id:'musiala',name:'Jamal Musiala',team:'GER',pos:'MF'},
+  {id:'wirtz',name:'Florian Wirtz',team:'GER',pos:'MF'},
+  {id:'lewa',name:'Robert Lewandowski',team:'POL',pos:'FW'},
+  {id:'salah',name:'Mohamed Salah',team:'EGY',pos:'FW'},
+  {id:'mane',name:'Sadio Mané',team:'SEN',pos:'FW'},
+  {id:'ziyech',name:'Hakim Ziyech',team:'MAR',pos:'MF'},
+  {id:'osimhen',name:'Victor Osimhen',team:'NGA',pos:'FW'},
+  {id:'dembele',name:'Ousmane Dembélé',team:'FRA',pos:'FW'},
+  {id:'griezmann',name:'Antoine Griezmann',team:'FRA',pos:'FW'},
+  {id:'neymar',name:'Neymar Jr.',team:'BRA',pos:'FW'},
+  {id:'firmino',name:'Roberto Firmino',team:'BRA',pos:'FW'},
+  {id:'pulisic',name:'Christian Pulisic',team:'USA',pos:'MF'},
+  {id:'reyna',name:'Gio Reyna',team:'USA',pos:'MF'},
+  {id:'lozano',name:'Hirving Lozano',team:'MEX',pos:'FW'},
+  {id:'daviesjr',name:'Alphonso Davies',team:'CAN',pos:'DF'},
+  {id:'azmoun',name:'Sardar Azmoun',team:'IRN',pos:'FW'},
+  {id:'alshehri',name:'Salem Al-Dawsari',team:'KSA',pos:'FW'},
+];
+const PLAYER=Object.fromEntries(PLAYERS.map(p=>[p.id,p]));
+
+const MIN=60000;
+const MATCHES_VERSION='wc2026-v3'; // bump to bust stale localStorage cache
+const WC_START=new Date(2026,5,11,0,0,0).getTime(); // June 11 2026 — no match can finish before this
+const canBeResult=m=>m.kickoff>0&&m.kickoff<Date.now()&&Date.now()>=WC_START;
+const sanitizeMatch=m=>(!canBeResult(m)&&(m.status==='live'||m.status==='finished'))?{...m,status:'upcoming',hs:0,as:0,minute:0,firstScorer:null}:m;
+// Real WC 2026 schedule — used as fallback. Live data comes from Firebase via Railway sync.
+const KO=(y,mo,d,h=17)=>new Date(y,mo-1,d,h,0,0).getTime();
+const MATCHES=[
+  // ── Group Stage ──
+  {id:'g1',round:'Group A',home:'USA',away:'PAN',kickoff:KO(2026,6,12,20),status:'upcoming',hs:0,as:0},
+  {id:'g2',round:'Group A',home:'JOR',away:'SEN',kickoff:KO(2026,6,13,14),status:'upcoming',hs:0,as:0},
+  {id:'g3',round:'Group B',home:'MEX',away:'HND',kickoff:KO(2026,6,13,20),status:'upcoming',hs:0,as:0},
+  {id:'g4',round:'Group B',home:'UZB',away:'TUN',kickoff:KO(2026,6,14,14),status:'upcoming',hs:0,as:0},
+  {id:'g5',round:'Group C',home:'CAN',away:'JAM',kickoff:KO(2026,6,14,20),status:'upcoming',hs:0,as:0},
+  {id:'g6',round:'Group C',home:'IRQ',away:'ALG',kickoff:KO(2026,6,15,14),status:'upcoming',hs:0,as:0},
+  {id:'g7',round:'Group D',home:'ARG',away:'AUS',kickoff:KO(2026,6,15,20),status:'upcoming',hs:0,as:0},
+  {id:'g8',round:'Group D',home:'NGA',away:'CRO',kickoff:KO(2026,6,16,14),status:'upcoming',hs:0,as:0},
+  {id:'g9',round:'Group E',home:'FRA',away:'JPN',kickoff:KO(2026,6,16,20),status:'upcoming',hs:0,as:0},
+  {id:'g10',round:'Group E',home:'BEL',away:'CMR',kickoff:KO(2026,6,17,14),status:'upcoming',hs:0,as:0},
+  {id:'g11',round:'Group F',home:'BRA',away:'KOR',kickoff:KO(2026,6,17,20),status:'upcoming',hs:0,as:0},
+  {id:'g12',round:'Group F',home:'ZAF',away:'COL',kickoff:KO(2026,6,18,14),status:'upcoming',hs:0,as:0},
+  {id:'g13',round:'Group G',home:'ENG',away:'SRB',kickoff:KO(2026,6,18,20),status:'upcoming',hs:0,as:0},
+  {id:'g14',round:'Group G',home:'MAR',away:'EGY',kickoff:KO(2026,6,19,14),status:'upcoming',hs:0,as:0},
+  {id:'g15',round:'Group H',home:'ESP',away:'TUR',kickoff:KO(2026,6,19,20),status:'upcoming',hs:0,as:0},
+  {id:'g16',round:'Group H',home:'KSA',away:'ECU',kickoff:KO(2026,6,20,14),status:'upcoming',hs:0,as:0},
+  {id:'g17',round:'Group I',home:'GER',away:'VEN',kickoff:KO(2026,6,20,20),status:'upcoming',hs:0,as:0},
+  {id:'g18',round:'Group I',home:'CIV',away:'NED',kickoff:KO(2026,6,21,14),status:'upcoming',hs:0,as:0},
+  {id:'g19',round:'Group J',home:'POR',away:'URU',kickoff:KO(2026,6,21,20),status:'upcoming',hs:0,as:0},
+  {id:'g20',round:'Group J',home:'POL',away:'IRN',kickoff:KO(2026,6,22,14),status:'upcoming',hs:0,as:0},
+  {id:'g21',round:'Group K',home:'NED',away:'DEN',kickoff:KO(2026,6,22,20),status:'upcoming',hs:0,as:0},
+  {id:'g22',round:'Group K',home:'AUT',away:'CHI',kickoff:KO(2026,6,23,14),status:'upcoming',hs:0,as:0},
+  {id:'g23',round:'Group L',home:'ITA',away:'PAR',kickoff:KO(2026,6,23,20),status:'upcoming',hs:0,as:0},
+  {id:'g24',round:'Group L',home:'SUI',away:'SCO',kickoff:KO(2026,6,24,14),status:'upcoming',hs:0,as:0},
+  // ── Round of 32 (Jul 4-9) ──
+  {id:'r32a',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,4,16),status:'upcoming',hs:0,as:0},
+  {id:'r32b',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,4,20),status:'upcoming',hs:0,as:0},
+  {id:'r32c',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,5,16),status:'upcoming',hs:0,as:0},
+  {id:'r32d',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,5,20),status:'upcoming',hs:0,as:0},
+  {id:'r32e',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,6,16),status:'upcoming',hs:0,as:0},
+  {id:'r32f',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,6,20),status:'upcoming',hs:0,as:0},
+  {id:'r32g',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,7,16),status:'upcoming',hs:0,as:0},
+  {id:'r32h',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,7,20),status:'upcoming',hs:0,as:0},
+  {id:'r32i',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,8,16),status:'upcoming',hs:0,as:0},
+  {id:'r32j',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,8,20),status:'upcoming',hs:0,as:0},
+  {id:'r32k',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,9,16),status:'upcoming',hs:0,as:0},
+  {id:'r32l',round:'Round of 32',home:'TBD',away:'TBD',kickoff:KO(2026,7,9,20),status:'upcoming',hs:0,as:0},
+  // ── Round of 16 (Jul 11-14) ──
+  {id:'k1',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,11,16),status:'upcoming',hs:0,as:0},
+  {id:'k2',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,11,20),status:'upcoming',hs:0,as:0},
+  {id:'k3',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,12,16),status:'upcoming',hs:0,as:0},
+  {id:'k4',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,12,20),status:'upcoming',hs:0,as:0},
+  {id:'k5',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,13,16),status:'upcoming',hs:0,as:0},
+  {id:'k6',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,13,20),status:'upcoming',hs:0,as:0},
+  {id:'k7',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,14,16),status:'upcoming',hs:0,as:0},
+  {id:'k8',round:'Round of 16',home:'TBD',away:'TBD',kickoff:KO(2026,7,14,20),status:'upcoming',hs:0,as:0},
+  // ── Quarter-finals (Jul 17-19) ──
+  {id:'qf1',round:'Quarter-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,17,20),status:'upcoming',hs:0,as:0},
+  {id:'qf2',round:'Quarter-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,18,16),status:'upcoming',hs:0,as:0},
+  {id:'qf3',round:'Quarter-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,18,20),status:'upcoming',hs:0,as:0},
+  {id:'qf4',round:'Quarter-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,19,20),status:'upcoming',hs:0,as:0},
+  // ── Semi-finals (Jul 22-23) ──
+  {id:'sf1',round:'Semi-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,22,20),status:'upcoming',hs:0,as:0},
+  {id:'sf2',round:'Semi-final',home:'TBD',away:'TBD',kickoff:KO(2026,7,23,20),status:'upcoming',hs:0,as:0},
+  // ── Final (Jul 26) ──
+  {id:'fin',round:'🏆 World Cup Final',home:'TBD',away:'TBD',kickoff:KO(2026,7,26,20),status:'upcoming',hs:0,as:0},
+];
+
+
+const BADGES=[
+  {id:'b1',icon:'🎯',name:'First Pick',desc:'Make your first prediction'},
+  {id:'b2',icon:'🔫',name:'Sharpshooter',desc:'5 exact scorelines correct'},
+  {id:'b3',icon:'🧠',name:'Mind Reader',desc:'3 correct first scorers'},
+  {id:'b4',icon:'🔥',name:'On Fire',desc:'3-match correct streak'},
+  {id:'b5',icon:'🏆',name:'Champion Oracle',desc:'Correctly pick the World Cup winner'},
+  {id:'b6',icon:'👁️',name:'Golden Eye',desc:'Correct Golden Boot pick'},
+  {id:'b7',icon:'🐺',name:'Underdog Hunter',desc:'Predict an upset correctly'},
+  {id:'b8',icon:'👑',name:'Legend',desc:'Reach 200 total points'},
+];
+
+const SCORING={winner:3,exact:5,firstScorer:4,cleanSheet:2,motm:3,champion:25,top4:10,topScorer:15,firstOut:8};
+const FINAL_TS=new Date(2026,6,26,20,0,0).getTime(); // July 26 2026 20:00 — World Cup Final
+
+function computeEarnedBadges(preds,scores,matches,tPicks,truth){
+  const ids=new Set();
+  if(Object.keys(preds).length>0) ids.add('b1');
+  const finished=matches.filter(m=>m.status==='finished');
+  if(finished.filter(m=>{const p=preds[m.id];return p&&p.hs===m.hs&&p.as===m.as;}).length>=5) ids.add('b2');
+  if(finished.filter(m=>{const p=preds[m.id];return p&&p.firstScorer&&p.firstScorer===m.firstScorer;}).length>=3) ids.add('b3');
+  if(scores.streak>=3) ids.add('b4');
+  if(truth.revealed.champion&&tPicks.champion&&tPicks.champion===truth.champion) ids.add('b5');
+  if(truth.revealed.topScorer&&tPicks.topScorer&&tPicks.topScorer===truth.topScorer) ids.add('b6');
+  // Underdog: predicted AWAY win correctly on a finished match
+  if(finished.some(m=>{const p=preds[m.id];return p&&p.winner==='AWAY'&&m.as>m.hs;})) ids.add('b7');
+  if(scores.total>=200) ids.add('b8');
+  return ids;
+}
+const AVATARS=['⚽','🔥','⚡','🌟','🦁','🚀','👑','🎯','🐉','💫','🦅','🐺','🎪','💎','🌙'];
+
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+function encData(obj){try{return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));}catch{return '';}}
+function decData(str){try{return JSON.parse(decodeURIComponent(escape(atob(str))));}catch{return null;}}
+function makeJoinUrl(t,user){return`${location.href.split('#')[0]}#join:${encData({name:t.name,code:t.code,creator:user.name,creatorAvatar:user.avatar})}`;}
+function makeFriendUrl(name,avatar,code){return`${location.href.split('#')[0]}#friend:${encData({name,avatar,code})}`;}
+
+function scoreMatch(pred,m){
+  if(!pred||m.status!=='finished')return{pts:0,flags:{}};
+  let pts=0;const flags={};
+  const res=m.hs>m.as?'HOME':m.as>m.hs?'AWAY':'DRAW';
+  if(pred.winner){flags.winner=pred.winner===res;if(flags.winner)pts+=SCORING.winner;}
+  if(pred.hs!=null&&pred.as!=null){flags.exact=pred.hs===m.hs&&pred.as===m.as;if(flags.exact)pts+=SCORING.exact;}
+  if(pred.firstScorer){flags.firstScorer=pred.firstScorer===m.firstScorer;if(flags.firstScorer)pts+=SCORING.firstScorer;}
+  // MOTM removed — football-data.org API doesn't provide this data
+  if(pred.cleanSheet!=null){const cs=m.hs===0||m.as===0;flags.cleanSheet=pred.cleanSheet===cs;if(flags.cleanSheet)pts+=SCORING.cleanSheet;}
+  return{pts,flags};
+}
+
+/* ── CONTEXT ── */
+const Ctx=createContext(null);
+function Provider({children}){
+  const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}};
+  const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+
+  const[user,setUserRaw]=useState(()=>load('wc_user'));
+  const[preds,setPreds]=useState(()=>load('wc_preds')||{});
+  const[matches,setMatches]=useState(()=>{
+    const saved=load('wc_matches');
+    const savedVersion=load('wc_matches_version');
+    // If version changed (schedule updated), discard saved state and use fresh
+    if(!saved||savedVersion!==MATCHES_VERSION)return MATCHES;
+    return MATCHES.map(fresh=>{
+      const s=saved.find(m=>m.id===fresh.id);
+      if(!s)return fresh;
+      return sanitizeMatch({...fresh,status:s.status,hs:s.hs,as:s.as,minute:s.minute||0,firstScorer:s.firstScorer||fresh.firstScorer,motm:s.motm||fresh.motm});
+    });
+  });
+  const[tournaments,setTournaments]=useState(()=>(load('wc_tourns')||[]).map(t=>t.code?t:{...t,code:genCode()}));
+  const[tPicks,setTPicks]=useState(()=>load('wc_tpicks')||{champion:null,top4:[null,null,null,null],topScorer:null,firstOut:null,locked:false});
+  const[friends,setFriends]=useState(()=>load('wc_friends')||[]);
+  // virtualFriends: {id -> {id,name,avatar}} for real users added via link (not mock users)
+  const[virtualFriends,setVirtualFriends]=useState(()=>load('wc_vfriends')||{});
+  const[truth,setTruth]=useState(()=>load('wc_truth')||{champion:'ARG',top4:['ARG','FRA','ENG','BRA'],topScorer:'mbappe',firstOut:'KSA',revealed:{champion:false,top4:false,topScorer:false,firstOut:false}});
+  const[myCode]=useState(()=>{let c=load('wc_mycode');if(!c){c=genCode();try{localStorage.setItem('wc_mycode',JSON.stringify(c))}catch{}}return c;});
+  const[palette,setPalette]=useState(()=>load('wc_palette')||0);
+  const[fbUsers,setFbUsers]=useState({});
+  const[wcTeams,setWcTeams]=useState({});
+  const[toasts,setToasts]=useState([]);
+  const[notifications,setNotifications]=useState(()=>load('wc_notifs')||[
+    {id:'n0',type:'announcement',msg:'Welcome to the WC 2026 Prediction League! Make your first prediction now.',read:false,time:'just now'},
+  ]);
+
+  const PALETTES=[
+    {em:'16 185 129',gd:'251 191 36',bl:'37 99 235'},
+    {em:'6 182 212',gd:'168 85 247',bl:'14 165 233'},
+    {em:'251 146 60',gd:'244 63 94',bl:'168 85 247'},
+    {em:'52 211 153',gd:'250 204 21',bl:'239 68 68'},
+  ];
+  const PALETTE_NAMES=['Stadium','Ice','Sunset','Classic'];
+
+  useEffect(()=>{const p=PALETTES[palette]||PALETTES[0];const r=document.documentElement.style;r.setProperty('--c-em',p.em);r.setProperty('--c-gd',p.gd);r.setProperty('--c-bl',p.bl);},[palette]);
+
+  const setUser=u=>{setUserRaw(u);save('wc_user',u);if(u&&myCode)fbUpdate(`users/${myCode}`,{name:u.name,avatar:u.avatar||'⚽',favTeam:u.favTeam||null,pts:0,acc:0,updatedAt:Date.now()}).catch(()=>{});};
+  useEffect(()=>{save('wc_preds',preds);},[preds]);
+  useEffect(()=>{save('wc_matches',matches);save('wc_matches_version',MATCHES_VERSION);},[matches]);
+  useEffect(()=>{save('wc_tourns',tournaments);},[tournaments]);
+  useEffect(()=>{save('wc_tpicks',tPicks);},[tPicks]);
+  useEffect(()=>{save('wc_friends',friends);},[friends]);
+  useEffect(()=>{save('wc_vfriends',virtualFriends);},[virtualFriends]);
+  useEffect(()=>{save('wc_truth',truth);},[truth]);
+  useEffect(()=>{save('wc_palette',palette);},[palette]);
+  useEffect(()=>{save('wc_notifs',notifications);},[notifications]);
+
+  const toast=useCallback((msg,type='ok')=>{
+    const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3000);
+  },[]);
+
+  const savePred=useCallback((mid,pred)=>{setPreds(p=>({...p,[mid]:pred}));toast('Prediction saved!');},[toast]);
+
+  const addFriend=useCallback(uid=>{
+    if(friends.includes(uid))return;
+    setFriends(f=>[...f,uid]);
+  },[friends]);
+
+  const removeFriend=useCallback(uid=>setFriends(f=>f.filter(x=>x!==uid)),[]);
+
+  const sendFriendRequest=useCallback(async(input,senderName,senderAvatar,senderCode)=>{
+    const raw=input.trim();
+    let u=null;
+    // URL-encoded friend link
+    if(raw.includes(':')){const enc=raw.split(':').slice(1).join(':');const d=decData(enc);if(d&&d.name)u={id:'url_'+(d.code||Date.now()),name:d.name,avatar:d.avatar||'⚽',fbCode:d.code};}
+    // Mock user code
+    // Real user code via Firebase
+    if(!u){
+      const theirCode=raw.toUpperCase().slice(0,8);
+      try{
+        await fbPush(`friendRequests/${theirCode}`,{fromCode:senderCode,fromName:senderName,fromAvatar:senderAvatar,sentAt:Date.now()});
+        toast('Friend request sent!');
+        return'sent';
+      }catch(e){return'notfound';}
+    }
+    if(friends.includes(u.id))return'already';
+    setNotifications(ns=>{
+      if(ns.some(n=>n.type==='friendreq'&&n.fromId===u.id&&!n.accepted))return ns;
+      return[{id:'fr'+Date.now(),type:'friendreq',fromId:u.id,fromName:u.name,fromAvatar:u.avatar,msg:`${u.name} wants to be your friend!`,read:false,time:'just now',accepted:false},...ns];
+    });
+    toast(`Friend request sent to ${u.name}!`);
+    return'sent';
+  },[friends,toast]);
+
+  const acceptFriendRequest=useCallback(notifId=>{
+    setNotifications(ns=>{
+      const n=ns.find(x=>x.id===notifId);
+      if(n&&!n.accepted){
+        setFriends(f=>f.includes(n.fromId)?f:[...f,n.fromId]);
+        // If URL-based friend (not a mock user), save their name+avatar too
+        if(n.fromId&&n.fromId.startsWith('url_')){
+          setVirtualFriends(vf=>({...vf,[n.fromId]:{id:n.fromId,name:n.fromName,avatar:n.fromAvatar||'⚽'}}));
+        }
+        // Notify Person A (the one who shared the link) via Firebase so their device adds us back
+        const theirCode=n.fromId.replace('url_','');
+        if(theirCode&&theirCode!==n.fromId){
+          setUserRaw(u=>{
+            if(u){
+              fbPush(`friendAccepted/${theirCode}`,{fromCode:myCode,fromName:u.name,fromAvatar:u.avatar||'⚽',acceptedAt:Date.now()});
+            }
+            return u;
+          });
+        }
+        setTimeout(()=>toast(`${n.fromName} added to your friends!`),0);
+      }
+      return ns.map(x=>x.id===notifId?{...x,accepted:true,read:true}:x);
+    });
+  },[toast,myCode]);
+
+  const scores=useMemo(()=>{
+    let total=0,correct=0,cur=0,best=0;
+    const finished=matches.filter(m=>m.status==='finished').sort((a,b)=>a.kickoff-b.kickoff);
+    finished.forEach(m=>{
+      const r=scoreMatch(preds[m.id],m);total+=r.pts;
+      if(!preds[m.id]){cur=0;}
+      else if(r.flags.winner===true){correct++;cur++;best=Math.max(best,cur);}
+      else if(r.flags.winner===false){cur=0;}
+    });
+    // Tournament picks points
+    if(truth.revealed.champion&&tPicks.champion===truth.champion)total+=SCORING.champion;
+    if(truth.revealed.top4)tPicks.top4.filter(Boolean).forEach(t=>{if(truth.top4.includes(t))total+=SCORING.top4;});
+    if(truth.revealed.topScorer&&tPicks.topScorer===truth.topScorer)total+=SCORING.topScorer;
+    if(truth.revealed.firstOut&&tPicks.firstOut===truth.firstOut)total+=SCORING.firstOut;
+    const res=finished.filter(m=>preds[m.id]).length;
+    return{total,correct,streak:best,accuracy:res?Math.round(correct/res*100):0};
+  },[preds,matches,tPicks,truth]);
+
+  const leaderboard=useMemo(()=>{
+    const you={id:'you',name:user?.name||'You',avatar:user?.avatar||'⚽',pts:scores.total,acc:scores.accuracy,move:0,isYou:true};
+    const FAKE_NAMES=new Set(['Maya O.','Diego F.','Priya S.','Tom B.','Aisha R.','Jordan K.','Sam L.','Chris M.']);
+    const realOthers=Object.entries(fbUsers).filter(([code,u])=>code!==myCode&&!FAKE_NAMES.has(u?.name)).map(([code,u])=>({id:code,name:u.name||'?',avatar:u.avatar||'⚽',pts:u.pts||0,acc:u.acc||0,move:0}));
+    return[...realOthers,you].sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name)).map((u,i)=>({...u,rank:i+1}));
+  },[user,scores,fbUsers,myCode]);
+
+  const myRank=leaderboard.find(u=>u.isYou)?.rank||11;
+  const unread=notifications.filter(n=>!n.read).length;
+  const pushNotif=useCallback(n=>setNotifications(ns=>[{...n,id:'ni'+Date.now(),read:false,time:'just now'},...ns]),[]);
+  const signOut=()=>{try{['wc_user','wc_preds','wc_matches','wc_matches_version','wc_tourns','wc_tpicks','wc_friends','wc_vfriends','wc_palette','wc_notifs','wc_seen_badges','wc_mycode'].forEach(k=>localStorage.removeItem(k))}catch{}window.location.reload();};
+
+  // ── Auto-reveal tournament picks results as matches finish ──
+  useEffect(()=>{
+    const finished=matches.filter(m=>m.status==='finished');
+
+    // First eliminated: first team to lose in Round of 32 (new in 2026) or Round of 16
+    if(!truth.revealed.firstOut){
+      const knockout=finished.filter(m=>m.round==='Round of 32'||m.round==='Round of 16').sort((a,b)=>a.kickoff-b.kickoff);
+      if(knockout.length>0){
+        const m=knockout[0];
+        const loser=m.hs>m.as?m.away:m.as>m.hs?m.home:null;
+        if(loser&&loser!=='TBD')setTruth(t=>({...t,firstOut:loser,revealed:{...t.revealed,firstOut:true}}));
+      }
+    }
+
+    // Top 4: when both semi-finals are finished
+    if(!truth.revealed.top4){
+      const sfs=finished.filter(m=>m.round?.includes('Semi'));
+      if(sfs.length>=2){
+        const top4=sfs.flatMap(m=>[m.home,m.away]);
+        setTruth(t=>({...t,top4,revealed:{...t.revealed,top4:true}}));
+      }
+    }
+
+    // Golden Boot: tally first scorers across all finished matches (real API data)
+    if(!truth.revealed.topScorer){
+      const finalDone=finished.find(m=>m.round==='🏆 World Cup Final'||m.id==='fin');
+      if(finalDone){
+        const tally={};
+        finished.forEach(m=>{if(m.firstScorer)tally[m.firstScorer]=(tally[m.firstScorer]||0)+1;});
+        const top=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
+        if(top)setTruth(t=>({...t,topScorer:top,revealed:{...t.revealed,topScorer:true}}));
+      }
+    }
+
+    // Champion: when the Final is finished (match from Firebase has round name, not fixed id)
+    if(!truth.revealed.champion){
+      const fin=finished.find(m=>m.round==='🏆 World Cup Final'||m.id==='fin');
+      if(fin){
+        const champion=fin.hs>fin.as?fin.home:fin.away;
+        if(champion&&champion!=='TBD')setTruth(t=>({...t,champion,revealed:{...t.revealed,champion:true}}));
+      }
+    }
+  },[matches]);
+
+  // ── Firebase: listen for real team data (correct names + groups from API) ──
+  useEffect(()=>{
+    const unsub=fbOn('wcTeams',data=>{if(data)setWcTeams(data);});
+    return unsub;
+  },[]);
+
+  // ── Firebase: listen for all registered users (global leaderboard) ──
+  useEffect(()=>{
+    const unsub=fbOn('users',data=>{setFbUsers(data||{});});
+    return unsub;
+  },[]);
+
+  // ── Firebase: write user profile on load and whenever name/scores change ──
+  useEffect(()=>{
+    if(!user||!myCode)return;
+    fbUpdate(`users/${myCode}`,{name:user.name,avatar:user.avatar||'⚽',favTeam:user.favTeam||null,pts:scores.total,acc:scores.accuracy,updatedAt:Date.now()}).catch(e=>console.warn('user write failed',e));
+  },[myCode,user?.name,user?.avatar,scores.total,scores.accuracy]);
+
+  // ── Firebase: keep points synced in every tournament the user is in ──
+  useEffect(()=>{
+    if(!user||!myCode)return;
+    tournaments.filter(t=>t.fbCode).forEach(t=>{
+      fbUpdate(`tournaments/${t.fbCode}/members/${myCode}`,{pts:scores.total,acc:scores.accuracy,updatedAt:Date.now()}).catch(()=>{});
+    });
+  },[scores.total,myCode,user,tournaments]);
+
+  // ── Firebase: listen for live match score updates from any device ──
+  useEffect(()=>{
+    const unsub=fbOn('liveMatches',data=>{
+      if(!data)return;
+      setMatches(ms=>ms.map(m=>{
+        const fb=data[m.id];
+        if(!fb)return m;
+        const safe=sanitizeMatch({...m,...fb});
+        if(safe.status===m.status&&safe.hs===m.hs&&safe.as===m.as&&safe.minute===m.minute)return m;
+        return safe;
+      }));
+    });
+    return unsub;
+  },[]);
+
+  // ── Firebase: listen for friend acceptances (Person A gets notified when B accepts) ──
+  useEffect(()=>{
+    if(!myCode)return;
+    const unsub=fbOn(`friendAccepted/${myCode}`,data=>{
+      if(!data)return;
+      Object.values(data).forEach(req=>{
+        if(!req||!req.fromCode)return;
+        const friendId='url_'+req.fromCode;
+        setFriends(f=>f.includes(friendId)?f:[...f,friendId]);
+        setVirtualFriends(vf=>vf[friendId]?vf:{...vf,[friendId]:{id:friendId,name:req.fromName,avatar:req.fromAvatar||'⚽'}});
+      });
+    });
+    return unsub;
+  },[myCode]);
+
+  // ── Firebase: listen for incoming friend requests ──
+  useEffect(()=>{
+    if(!myCode)return;
+    const unsub=fbOn(`friendRequests/${myCode}`,data=>{
+      if(!data)return;
+      Object.entries(data).forEach(([key,req])=>{
+        if(!req||req.accepted)return;
+        setNotifications(ns=>{
+          if(ns.some(n=>n.fbKey===key))return ns;
+          return[{id:'fr'+Date.now(),fbKey:key,fbPath:`friendRequests/${myCode}/${key}`,type:'friendreq',
+            fromId:'url_'+req.fromCode,fromName:req.fromName,fromAvatar:req.fromAvatar||'⚽',
+            msg:`${req.fromName} wants to be your friend!`,read:false,time:'just now',accepted:false},...ns];
+        });
+      });
+    });
+    return unsub;
+  },[myCode]);
+
+  // ── Firebase: listen for tournament member updates (for joined tournaments) ──
+  useEffect(()=>{
+    const unsubs=[];
+    tournaments.forEach(t=>{
+      if(!t.fbCode)return;
+      const unsub=fbOn(`tournaments/${t.fbCode}/members`,members=>{
+        if(!members)return;
+        setTournaments(ts=>ts.map(x=>{
+          if(x.fbCode!==t.fbCode)return x;
+          const mArr=Object.entries(members).map(([k,v])=>({...v,isYou:k===myCode}));
+          return{...x,members:mArr};
+        }));
+      });
+      unsubs.push(unsub);
+    });
+    return()=>unsubs.forEach(u=>u());
+  },[tournaments.map(t=>t.fbCode).join(',')]);
+
+  // ── Firebase: load REAL match fixtures from sync script ──
+  useEffect(()=>{
+    const unsub=fbOn('wcAllMatches',data=>{
+      if(!data)return;
+      const apiMatches=Object.values(data).sort((a,b)=>a.kickoff-b.kickoff);
+      if(apiMatches.length===0)return;
+      setMatches(ms=>{
+        const updated=ms.map(local=>{
+          const api=apiMatches.find(a=>a.id===local.id);
+          if(!api)return local;
+          const liveOrDone=local.status==='live'||local.status==='finished';
+          const safe=sanitizeMatch(api);
+          return{...local,...safe,...(liveOrDone?{status:local.status,hs:local.hs,as:local.as,minute:local.minute,firstScorer:local.firstScorer}:{})};
+        });
+        const newOnes=apiMatches.filter(api=>!ms.find(m=>m.id===api.id)).map(sanitizeMatch);
+        return newOnes.length>0?[...updated,...newOnes]:updated;
+      });
+    });
+    return unsub;
+  },[]);
+
+  // ── One-time cleanup: remove fake/seed users from Firebase leaderboard ──
+  useEffect(()=>{
+    if(load('wc_cleanup_fakes_v1'))return;
+    const FAKE_NAMES=['Maya O.','Diego F.','Priya S.','Tom B.','Aisha R.','Jordan K.','Sam L.','Chris M.'];
+    fbGet('users').then(data=>{
+      if(!data)return;
+      Object.entries(data).forEach(([code,u])=>{if(u&&FAKE_NAMES.includes(u.name))fbSet(`users/${code}`,null).catch(()=>{});});
+      save('wc_cleanup_fakes_v1','done');
+    }).catch(()=>{});
+  },[]);
+
+  // ── Badge popup system ──
+  const[badgeQueue,setBadgeQueue]=useState([]);
+  const[activeBadge,setActiveBadge]=useState(null);
+  const earnedBadgeIds=useMemo(()=>computeEarnedBadges(preds,scores,matches,tPicks,truth),[preds,scores,matches,tPicks,truth]);
+
+  useEffect(()=>{
+    // Read seen badges fresh from localStorage each time to avoid stale closure
+    let seen;try{seen=new Set(JSON.parse(localStorage.getItem('wc_seen_badges')||'[]'))}catch{seen=new Set();}
+    const newOnes=[...earnedBadgeIds].filter(id=>!seen.has(id));
+    if(newOnes.length===0)return;
+    newOnes.forEach(id=>seen.add(id));
+    try{localStorage.setItem('wc_seen_badges',JSON.stringify([...seen]))}catch{};
+    setBadgeQueue(q=>[...q,...newOnes.map(id=>BADGES.find(b=>b.id===id)).filter(Boolean)]);
+  },[earnedBadgeIds]);
+
+  const dismissBadge=useCallback(()=>setActiveBadge(null),[]);
+
+  useEffect(()=>{
+    if(activeBadge||badgeQueue.length===0)return;
+    const[next,...rest]=badgeQueue;
+    setActiveBadge(next);
+    setBadgeQueue(rest);
+    const t=setTimeout(()=>setActiveBadge(null),3000);
+    return()=>clearTimeout(t);
+  },[badgeQueue,activeBadge]);
+
+  // joinByCode — checks Firebase first, falls back to URL-encoded data
+  const joinByCode=useCallback(async(input,userName,userAvatar,userCode)=>{
+    const raw=input.trim();
+    let td=null;
+    if(raw.includes(':')){const enc=raw.split(':').slice(1).join(':');td=decData(enc);}
+    if(!td){td=decData(raw);} // handle raw base64 from link hash
+    const c=(td?.code||raw.replace(/.*#join[:-]?/i,'')).toUpperCase().slice(0,8);
+    if(tournaments.some(t=>t.code===c))return'already';
+    // Check Firebase first
+    try{
+      const fbData=await fbGet(`tournaments/${c}`);
+      if(fbData){
+        // Add yourself as a member in Firebase
+        await fbUpdate(`tournaments/${c}/members/${userCode||'guest'}`,{name:userName,avatar:userAvatar,pts:scores.total,joinedAt:Date.now(),isYou:true});
+        const members=Object.entries(fbData.members||{}).map(([k,v])=>({...v,isYou:k===(userCode||'guest')}));
+        const newT={id:'t'+Date.now(),name:fbData.name,code:c,fbCode:c,creatorIsYou:false,createdAt:fbData.createdAt||Date.now(),members};
+        setTournaments(ts=>[...ts,newT]);
+        toast(`Joined "${fbData.name}"!`);
+        return true;
+      }
+    }catch(e){}
+    // Fallback: URL-encoded data
+    if(td&&td.code){
+      if(tournaments.some(t=>t.code===td.code))return'already';
+      const newT={id:'t'+Date.now(),name:td.name,code:td.code,creatorIsYou:false,createdAt:Date.now(),
+        members:[{name:userName,avatar:userAvatar,pts:scores.total,isYou:true},{name:td.creator||'Host',avatar:td.creatorAvatar||'🏆',pts:0,isYou:false}]};
+      setTournaments(ts=>[...ts,newT]);
+      toast(`Joined "${td.name}"!`);
+      return true;
+    }
+    return false;
+  },[tournaments,scores.total,toast]);
+
+  const ctx={user,setUser,preds,savePred,matches,setMatches,tournaments,setTournaments,tPicks,setTPicks,friends,addFriend,removeFriend,sendFriendRequest,acceptFriendRequest,myCode,virtualFriends,palette,setPalette,PALETTES,PALETTE_NAMES,toasts,toast,notifications,setNotifications,pushNotif,scores,leaderboard,myRank,unread,signOut,joinByCode,earnedBadgeIds,activeBadge,dismissBadge,truth,setTruth,wcTeams};
+  return(
+    <Ctx.Provider value={ctx}>
+      {children}
+      <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 items-center pointer-events-none">
+        {toasts.map(t=>(
+          <div key={t.id} className={`pop glass2 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 pointer-events-auto ${
+            t.type==='err'?'text-rose-300' : t.type==='goal'?'text-white':'text-em'
+          }`} style={t.type==='goal'?{border:'1px solid rgb(251 191 36 / 0.6)',background:'rgba(251,191,36,0.15)'}:{}}>
+            {t.type==='goal'?'':t.type==='err'?'✗ ':'✓ '}{t.msg}
+          </div>
+        ))}
+      </div>
+    </Ctx.Provider>
+  );
+}
+const useWC=()=>useContext(Ctx);
+
+/* ── PRIMITIVES ── */
+function toFlagEmoji(iso){
+  if(!iso)return'';
+  if(iso==='gb-sct')return'🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+  if(iso==='gb-eng')return'🏴󠁧󠁢󠁥󠁮󠁧󠁿';
+  if(iso.length!==2)return'';
+  return String.fromCodePoint(0x1F1E6+(iso.toUpperCase().charCodeAt(0)-65),0x1F1E6+(iso.toUpperCase().charCodeAt(1)-65));
+}
+function Flag({iso,size=24}){
+  if(!iso)return null;
+  const[err,setErr]=useState(false);
+  if(err){const em=toFlagEmoji(iso);return em?<span className="shrink-0 inline-block text-center" style={{fontSize:Math.round(size*.85),lineHeight:1,width:size}}>{em}</span>:null;}
+  return<img src={`https://flagcdn.com/${iso}.svg`} width={size} height={Math.round(size*.72)} onError={()=>setErr(true)} className="rounded-sm ring-1 ring-white/15 object-cover shrink-0 inline-block" style={{width:size,height:Math.round(size*.72)}} alt=""/>;
+}
+const _I={
+  'x':<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+  'plus':<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+  'minus':<line x1="5" y1="12" x2="19" y2="12"/>,
+  'check':<polyline points="20 6 9 17 4 12"/>,
+  'check-circle':<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>,
+  'arrow-right':<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
+  'arrow-left':<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
+  'arrow-up':<><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></>,
+  'arrow-down':<><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></>,
+  'chevron-right':<polyline points="9 18 15 12 9 6"/>,
+  'chevron-up':<polyline points="18 15 12 9 6 15"/>,
+  'chevron-down':<polyline points="6 9 12 15 18 9"/>,
+  'house':<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+  'trophy':<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></>,
+  'calendar-days':<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/></>,
+  'bar-chart-2':<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
+  'users':<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+  'user':<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+  'settings':<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
+  'bell':<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
+  'lock':<><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
+  'lock-open':<><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></>,
+  'save':<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>,
+  'send':<><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+  'log-out':<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
+  'log-in':<><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></>,
+  'user-plus':<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></>,
+  'user-minus':<><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></>,
+  'list-checks':<><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></>,
+  'copy':<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>,
+  'hash':<><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></>,
+  'info':<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
+  'timer':<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+  'megaphone':<><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></>,
+  'newspaper':<><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></>,
+  'medal':<><circle cx="12" cy="17" r="5"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.11"/><path d="M15 7a3 3 0 1 0-6 0l-2 6h10l-2-6z"/></>,
+  'crosshair':<><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></>,
+  'zap':<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+  'pencil':<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+  'qr-code':<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>,
+};
+function Ico({name,size=18,className=''}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`inline-block shrink-0 ${className}`} style={{width:size,height:size}}>
+      {_I[name]||null}
+    </svg>
+  );
+}
+function CountUp({to=0}){
+  const[val,setVal]=useState(0);const r=useRef();
+  useEffect(()=>{const from=val,start=performance.now(),dur=600;cancelAnimationFrame(r.current);const tick=t=>{const k=Math.min(1,(t-start)/dur),e=1-Math.pow(1-k,3);setVal(Math.round(from+(to-from)*e));if(k<1)r.current=requestAnimationFrame(tick);};r.current=requestAnimationFrame(tick);return()=>cancelAnimationFrame(r.current);},[to]);
+  return<>{val}</>;
+}
+function Countdown({to}){
+  const[diff,setDiff]=useState(Math.max(0,to-Date.now()));
+  useEffect(()=>{const id=setInterval(()=>setDiff(Math.max(0,to-Date.now())),1000);return()=>clearInterval(id);},[to]);
+  const d=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5),m=Math.floor((diff%36e5)/6e4),s=Math.floor((diff%6e4)/1000);
+  const U=({v,l})=><div className="flex flex-col items-center"><div className="font-display font-black text-3xl text-white tabular-nums w-14 text-center bg-white/5 rounded-xl py-1">{String(v).padStart(2,'0')}</div><div className="text-[10px] text-slate-500 font-semibold mt-1 uppercase tracking-widest">{l}</div></div>;
+  return<div className="flex items-end gap-2"><U v={d} l="Days"/><span className="text-slate-600 font-black text-2xl mb-5">:</span><U v={h} l="Hrs"/><span className="text-slate-600 font-black text-2xl mb-5">:</span><U v={m} l="Min"/><span className="text-slate-600 font-black text-2xl mb-5">:</span><U v={s} l="Sec"/></div>;
+}
+function Btn({children,variant='primary',size='md',icon,onClick,disabled,className='',type='button'}){
+  const sz={sm:'px-3 py-1.5 text-xs',md:'px-4 py-2 text-sm',lg:'px-6 py-3 text-base'};
+  const vr={primary:'bg-em text-ink-950 font-bold shadow-glow hover:brightness-110',gold:'bg-gd text-ink-950 font-bold hover:brightness-110',ghost:'glass text-slate-200 hover:bg-white/10',danger:'bg-rose-600/80 text-white hover:bg-rose-600',subtle:'bg-em/10 text-em border border-em/25 hover:bg-em/20'};
+  return<button type={type} className={`press inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed select-none whitespace-nowrap ${sz[size]} ${vr[variant]} ${className}`} onClick={onClick} disabled={disabled}>{icon&&<Ico name={icon} size={size==='sm'?14:16}/>}{children}</button>;
+}
+function Card({children,className='',...p}){return<div className={`glass rounded-2xl ${className}`} {...p}>{children}</div>;}
+function Badge({children,color='slate'}){
+  const c={slate:'bg-white/8 text-slate-300',em:'bg-em/15 text-em',gold:'bg-gd/15 text-gd',rose:'bg-rose-500/15 text-rose-300',blue:'bg-bl/15 text-blue-300'};
+  return<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${c[color]||c.slate}`}>{children}</span>;
+}
+function Modal({children,onClose}){
+  useEffect(()=>{const fn=e=>{if(e.key==='Escape')onClose();};window.addEventListener('keydown',fn);return()=>window.removeEventListener('keydown',fn);},[onClose]);
+  return(
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <div className="fade absolute inset-0 bg-ink-950/80 backdrop-blur-sm"/>
+      <div className="sup relative w-full sm:max-w-lg glass2 rounded-t-3xl sm:rounded-3xl max-h-[94vh] flex flex-col" onClick={e=>e.stopPropagation()}>
+        <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mt-3 mb-0 shrink-0"/>
+        {children}
+      </div>
+    </div>
+  );
+}
+function koLabel(ts){const d=ts-Date.now();if(d<0)return'soon';const h=Math.floor(d/36e5),days=Math.floor(h/24);if(days>=1)return`in ${days}d`;if(h>=1)return`in ${h}h`;return`in ${Math.max(1,Math.floor(d/6e4))}m`;}
+
+/* ── NAME GATE ── */
+function NameGate(){
+  const{setUser}=useWC();
+  const[step,setStep]=useState(0);
+  const[name,setName]=useState('');
+  const[avatar,setAvatar]=useState('⚽');
+  const[favTeam,setFavTeam]=useState('');
+  const[q,setQ]=useState('');
+  const filtered=TEAMS.filter(t=>t.name.toLowerCase().includes(q.toLowerCase())||t.id.includes(q.toUpperCase()));
+  return(
+    <div className="min-h-screen pitch flex items-center justify-center p-4">
+      <div className="w-full max-w-md pop">
+        <div className="glass rounded-3xl overflow-hidden">
+          <div className="relative p-6 text-center" style={{background:'radial-gradient(ellipse 100% 80% at 50% -20%,rgb(var(--c-em)/.15),transparent 60%)'}}>
+            <div className="text-5xl mb-3">🏆</div>
+            <h1 className="font-display font-black text-2xl text-white">World Cup 2026</h1>
+            <p className="text-slate-400 text-sm mt-1">Prediction League</p>
+            <div className="flex justify-center gap-2 mt-4">
+              {[0,1,2].map(i=><div key={i} className={`h-1.5 rounded-full transition-all ${i<=step?'bg-em w-8':'bg-white/10 w-4'}`}/>)}
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            {step===0&&<div className="sup">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">What's your name?</label>
+              <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Alex Rivera" autoFocus onKeyDown={e=>e.key==='Enter'&&name.trim().length>=2&&setStep(1)}/>
+              <Btn className="w-full mt-4" onClick={()=>setStep(1)} disabled={name.trim().length<2} icon="arrow-right">Continue</Btn>
+            </div>}
+            {step===1&&<div className="sup">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Pick your avatar</label>
+              <div className="grid grid-cols-5 gap-2">
+                {AVATARS.map(a=><button key={a} onClick={()=>setAvatar(a)} className={`press aspect-square rounded-xl grid place-items-center text-2xl border transition-all ${avatar===a?'border-em bg-em/15 scale-105':'border-white/8 bg-white/4 hover:border-white/20'}`}>{a}</button>)}
+              </div>
+              <Btn className="w-full mt-4" onClick={()=>setStep(2)} icon="arrow-right">Continue</Btn>
+            </div>}
+            {step===2&&<div className="sup">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Favourite team</label>
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search teams..." className="mb-3"/>
+              <div className="grid grid-cols-4 gap-1.5 max-h-52 overflow-y-auto pr-1">
+                {filtered.map(t=><button key={t.id} onClick={()=>setFavTeam(t.id)} className={`press flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${favTeam===t.id?'border-em bg-em/15':'border-white/8 bg-white/4 hover:border-white/20'}`}><Flag iso={t.iso} size={28}/><span className="text-[10px] font-bold text-slate-300">{t.id}</span></button>)}
+              </div>
+              <Btn className="w-full mt-4" onClick={()=>setUser({name:name.trim(),avatar,favTeam})} disabled={!favTeam} icon="check">Enter the League</Btn>
+            </div>}
+          </div>
+          <p className="text-center text-xs text-slate-600 pb-4">No account needed · saves to this device</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── LAYOUT ── */
+const NAV=[
+  {id:'home',label:'Home',icon:'house'},
+  {id:'tournament',label:'Tournament',icon:'trophy'},
+  {id:'matches',label:'Matches',icon:'calendar-days'},
+  {id:'leaderboard',label:'Leaderboard',icon:'bar-chart-2'},
+  {id:'friends',label:'Friends',icon:'users'},
+];
+const SIDEBAR_NAV=[...NAV,{id:'profile',label:'Profile',icon:'user'},{id:'settings',label:'Settings',icon:'settings'}];
+function Sidebar({page,setPage}){
+  const{scores,myRank}=useWC();
+  return(
+    <aside className="hidden lg:flex flex-col w-60 shrink-0 glass2 border-r border-white/6 h-screen sticky top-0">
+      <div className="p-5 border-b border-white/6 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-em/15 grid place-items-center text-xl">🏆</div>
+        <div><div className="font-display font-bold text-white text-sm">WC Predictor</div><div className="text-[11px] text-slate-500">2026 Edition</div></div>
+      </div>
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        {SIDEBAR_NAV.map(n=>{
+          const on=page===n.id;
+          return<button key={n.id} onClick={()=>setPage(n.id)} className={`press w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${on?'bg-em/15 text-em':'text-slate-400 hover:text-white hover:bg-white/5'}`}><Ico name={n.icon} size={18}/>{n.label}</button>;
+        })}
+      </nav>
+      <div className="p-3 border-t border-white/6">
+        <div className="glass rounded-xl p-3">
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Your rank</div>
+          <div className="font-display font-black text-white text-xl">#{myRank} · {scores.total} pts</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+function Topbar({page,setPage,setBellOpen}){
+  const{user,unread}=useWC();
+  const title=SIDEBAR_NAV.find(n=>n.id===page)?.label||'';
+  return(
+    <header className="sticky top-0 z-40 glass2 border-b border-white/6 h-16 flex items-center px-4 gap-3">
+      <div className="lg:hidden flex items-center gap-2.5 flex-1"><span className="text-xl">🏆</span><span className="font-display font-bold text-white text-sm">WC Predictor</span></div>
+      <div className="hidden lg:block font-display font-bold text-white text-base flex-1">{title}</div>
+      <div className="flex items-center gap-2">
+        <button onClick={()=>setBellOpen(o=>!o)} className="press relative w-9 h-9 glass rounded-xl grid place-items-center text-slate-300 hover:text-white">
+          <Ico name="bell" size={18}/>{unread>0&&<span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-gd live"/>}
+        </button>
+        <button onClick={()=>setPage('profile')} className="press flex items-center gap-2 glass rounded-xl px-2 py-1.5">
+          <span className="text-xl">{user?.avatar||'⚽'}</span>
+          <span className="hidden sm:block text-sm font-semibold text-white max-w-[100px] truncate">{user?.name||'You'}</span>
+        </button>
+      </div>
+    </header>
+  );
+}
+function BottomTabs({page,setPage}){
+  return(
+    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass2 border-t border-white/6">
+      <div className="grid grid-cols-5 pb-safe">
+        {NAV.map(n=>{const on=page===n.id;return<button key={n.id} onClick={()=>setPage(n.id)} className={`press flex flex-col items-center gap-1.5 py-3 transition-colors ${on?'text-em':'text-slate-500'}`}><Ico name={n.icon} size={24}/><span className="text-[11px] font-bold">{n.label}</span></button>;})}
+      </div>
+    </nav>
+  );
+}
+
+/* ── BELL PANEL ── */
+function BellPanel({onClose}){
+  const{notifications,setNotifications,acceptFriendRequest}=useWC();
+  const markAll=()=>setNotifications(ns=>ns.map(n=>({...n,read:true})));
+  const dismiss=id=>setNotifications(ns=>ns.filter(n=>n.id!==id));
+  return(
+    <div className="fixed inset-0 z-[100] flex" onClick={onClose}>
+      <div className="fade absolute inset-0 bg-ink-950/70 backdrop-blur-sm"/>
+      <div className="sup relative ml-auto w-full max-w-sm h-full glass2 border-l border-white/8 flex flex-col" onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b border-white/6">
+          <div className="font-display font-bold text-white">Notifications</div>
+          <div className="flex items-center gap-2">
+            <button onClick={markAll} className="text-xs text-em font-semibold">Mark all read</button>
+            <button onClick={onClose} className="press w-8 h-8 glass rounded-xl grid place-items-center text-slate-400"><Ico name="x" size={16}/></button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {notifications.length===0&&<div className="text-center text-slate-500 text-sm py-8">No notifications</div>}
+          {notifications.map(n=>(
+            <div key={n.id} className={`glass rounded-2xl p-3.5 border transition-all ${n.read?'border-white/5 opacity-70':n.type==='friendreq'&&!n.accepted?'border-gd/30':'border-em/20'}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-lg grid place-items-center shrink-0 text-lg ${n.type==='friendreq'?'bg-gd/15 text-gd':n.type==='announcement'?'bg-bl/15 text-blue-300':'bg-em/15 text-em'}`}>
+                  {n.type==='friendreq'?<span>{n.fromAvatar||'👤'}</span>:<Ico name={n.type==='announcement'?'megaphone':'bell'} size={15}/>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-200 leading-snug">{n.msg}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{n.time}</p>
+                  {n.type==='friendreq'&&!n.accepted&&(
+                    <div className="flex gap-2 mt-2.5">
+                      <Btn size="sm" variant="gold" onClick={()=>acceptFriendRequest(n.id)} icon="check">Accept</Btn>
+                      <Btn size="sm" variant="ghost" onClick={()=>dismiss(n.id)}>Decline</Btn>
+                    </div>
+                  )}
+                  {n.type==='friendreq'&&n.accepted&&<p className="text-xs text-em font-semibold mt-1">✓ Friends added!</p>}
+                </div>
+                {!n.read&&<div className="w-2 h-2 rounded-full bg-em shrink-0 mt-1"/>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── MATCH CARD ── */
+function MatchCard({m,onClick}){
+  const{preds,wcTeams}=useWC();
+  const pred=preds[m.id];
+  const canEdit=m.status==='upcoming'&&Date.now()<m.kickoff;
+  const ht=TEAM[m.home]||wcTeams[m.home]||{name:m.homeName||m.home,iso:null};
+  const at=TEAM[m.away]||wcTeams[m.away]||{name:m.awayName||m.away,iso:null};
+  const isTbd=!m.home||!m.away||String(m.home).toUpperCase()==='TBD'||String(m.away).toUpperCase()==='TBD';
+  const canEditFinal=canEdit&&!isTbd;
+  if(isTbd) return(
+    <div className="glass rounded-2xl p-4 border border-white/6 opacity-60">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{m.round}</span>
+        <span className="text-[11px] text-slate-500">{koLabel(m.kickoff)}</span>
+      </div>
+      <div className="flex flex-col items-center gap-1 py-2">
+        <span className="text-2xl">⏳</span>
+        <span className="text-xs text-slate-500 font-semibold">Upcoming...</span>
+      </div>
+    </div>
+  );
+  return(
+    <button onClick={onClick} className="press w-full text-left glass rounded-2xl p-4 border border-white/6 hover:border-em/30 transition-all group">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{m.round}</span>
+        {m.status==='live'?<span className="flex items-center gap-1.5 text-rose-400 text-xs font-bold"><span className="w-1.5 h-1.5 rounded-full bg-rose-400 live"/>{m.minute}' LIVE</span>
+        :m.status==='finished'?<Badge color="em">Full time</Badge>
+        :<span className="text-[11px] text-slate-500">{koLabel(m.kickoff)}</span>}
+      </div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <div className={`flex items-center gap-2 ${m.status==='finished'&&m.hs<m.as?'opacity-40':''}`}>
+          <Flag iso={ht?.iso} size={32}/><span className="font-bold text-sm sm:text-base text-white truncate leading-tight">{ht?.name}</span>
+        </div>
+        <div className="text-center px-1">
+          {m.status==='upcoming'?<span className="font-black text-slate-600 text-base">VS</span>
+          :<span className="font-display font-black text-white text-2xl tabular-nums">{m.hs}<span className="text-slate-600 mx-1">–</span>{m.as}</span>}
+        </div>
+        <div className={`flex items-center gap-2 justify-end ${m.status==='finished'&&m.as<m.hs?'opacity-40':''}`}>
+          <span className="font-bold text-sm sm:text-base text-white truncate text-right leading-tight">{at?.name}</span><Flag iso={at?.iso} size={32}/>
+        </div>
+      </div>
+      <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between">
+        {pred?.winner?<span className="text-xs text-em font-semibold flex items-center gap-1"><Ico name="check-circle" size={13}/>Pick saved</span>
+        :canEditFinal?<span className="text-xs text-gd font-semibold flex items-center gap-1"><Ico name="pencil" size={13}/>Tap to predict</span>
+        :<span className="text-xs text-slate-600 flex items-center gap-1"><Ico name="lock" size={13}/>{isTbd?'Teams TBD':'Picks closed'}</span>}
+        <Ico name="chevron-right" size={16} className="text-slate-600 group-hover:text-em transition-colors"/>
+      </div>
+    </button>
+  );
+}
+
+/* ── PREDICTION MODAL ── */
+function PredModal({matchId,onClose}){
+  const{preds,savePred,matches,wcTeams}=useWC();
+  const m=matches.find(x=>x.id===matchId);
+  if(!m)return null;
+  const existing=preds[matchId];
+  const isTbd=!m.home||!m.away||String(m.home).toUpperCase()==='TBD'||String(m.away).toUpperCase()==='TBD';
+  const canEdit=m.status==='upcoming'&&Date.now()<m.kickoff&&!isTbd;
+  const isGroupStage=m.round?.startsWith('Group');
+  const[draft,setDraft]=useState(()=>existing||{winner:null,hs:1,as:1,firstScorer:null,cleanSheet:null});
+  const set=patch=>setDraft(d=>({...d,...patch}));
+  const ht=TEAM[m.home]||wcTeams[m.home]||{name:m.homeName||m.home,iso:null};
+  const at=TEAM[m.away]||wcTeams[m.away]||{name:m.awayName||m.away,iso:null};
+  const squad=isGroupStage?PLAYERS.filter(p=>p.team===m.home||p.team===m.away):[];
+  const result=existing&&m.status==='finished'?scoreMatch(existing,m):null;
+
+  return(
+    <Modal onClose={onClose}>
+      <div className="p-5 border-b border-white/6 relative" style={{background:'radial-gradient(ellipse 120% 80% at 50% -30%,rgb(var(--c-em)/.12),transparent 60%)'}}>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{m.round}</span>
+          <button onClick={onClose} className="press w-8 h-8 glass rounded-xl grid place-items-center text-slate-400"><Ico name="x" size={16}/></button>
+        </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <div className={`flex flex-col items-center gap-2 ${m.status==='finished'&&m.hs<m.as?'opacity-40':''}`}>
+            <Flag iso={ht?.iso} size={52}/><span className="font-bold text-sm text-white text-center leading-tight">{ht?.name}</span>
+          </div>
+          <div className="text-center px-2">
+            {m.status==='upcoming'?<div className="font-black text-slate-500 text-2xl">VS</div>
+            :<div className="font-display font-black text-white text-4xl tabular-nums">{m.hs}<span className="text-slate-600 mx-2">–</span>{m.as}</div>}
+            {m.status==='live'&&<div className="text-rose-400 text-xs font-bold mt-1 flex items-center gap-1 justify-center"><span className="w-1.5 h-1.5 rounded-full bg-rose-400 live"/>{m.minute}'</div>}
+          </div>
+          <div className={`flex flex-col items-center gap-2 ${m.status==='finished'&&m.as<m.hs?'opacity-40':''}`}>
+            <Flag iso={at?.iso} size={52}/><span className="font-bold text-sm text-white text-center leading-tight">{at?.name}</span>
+          </div>
+        </div>
+      </div>
+      <div className="overflow-y-auto flex-1 p-5 space-y-5">
+        {result&&(
+          <div className="glass rounded-2xl p-4 border border-em/25">
+            <div className="flex items-center justify-between mb-3"><span className="font-bold text-sm text-white">Your result</span><span className="font-display font-black text-em text-xl">+{result.pts} pts</span></div>
+            <div className="grid grid-cols-2 gap-2">
+              {[['Winner',result.flags.winner],['Exact score',result.flags.exact],['First scorer',result.flags.firstScorer],['Clean sheet',result.flags.cleanSheet]].map(([lbl,ok])=>(
+                <div key={lbl} className={`rounded-lg px-3 py-2 text-xs font-semibold flex items-center justify-between ${ok===true?'bg-em/15 text-em':ok===false?'bg-white/5 text-slate-500':'bg-white/3 text-slate-600'}`}>
+                  {lbl}{ok===true?'✓':ok===false?'✗':'—'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {m.status==='finished'&&!existing&&<div className="text-center text-slate-500 text-sm py-4">No prediction was made for this match.</div>}
+        {canEdit&&<>
+          <div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Match winner</div>
+            <div className="grid grid-cols-3 gap-2">
+              {[['HOME',ht?.name],['DRAW','Draw 🤝'],['AWAY',at?.name]].map(([v,lbl])=>(
+                <button key={v} onClick={()=>set({winner:v})} className={`press py-4 rounded-2xl border text-sm font-bold transition-all ${draft.winner===v?'border-em bg-em/15 text-white':'border-white/8 bg-white/4 text-slate-300 hover:border-white/20'}`}>{lbl}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Exact score</div>
+            <div className="flex items-center justify-center gap-6">
+              {[['hs',m.home],['as',m.away]].map(([k,code],i)=>(
+                <React.Fragment key={k}>
+                  {i===1&&<span className="font-black text-slate-600 text-2xl">–</span>}
+                  <div className="flex flex-col items-center gap-2">
+                    <Flag iso={TEAM[code]?.iso} size={28}/>
+                    <div className="flex items-center gap-3">
+                      <button onClick={()=>set({[k]:Math.max(0,draft[k]-1)})} className="press w-14 h-14 glass rounded-2xl grid place-items-center text-slate-300 hover:text-white active:bg-white/10"><Ico name="minus" size={22}/></button>
+                      <span className="font-display font-black text-white text-4xl w-12 text-center tabular-nums">{draft[k]}</span>
+                      <button onClick={()=>set({[k]:Math.min(9,draft[k]+1)})} className="press w-14 h-14 glass rounded-2xl grid place-items-center text-slate-300 hover:text-white active:bg-white/10"><Ico name="plus" size={22}/></button>
+                    </div>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Clean sheet?</div>
+            <div className="grid grid-cols-2 gap-2">
+              {[[true,'Yes ✓'],[false,'No ✗']].map(([v,lbl])=>(
+                <button key={String(v)} onClick={()=>set({cleanSheet:v})} className={`press py-4 rounded-2xl border text-sm font-bold transition-all ${draft.cleanSheet===v?'border-em bg-em/15 text-white':'border-white/8 bg-white/4 text-slate-300 hover:border-white/20'}`}>{lbl}</button>
+              ))}
+            </div>
+          </div>
+          {squad.length>0&&<>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">First goal scorer</div>
+              <div className="flex flex-wrap gap-2">
+                {squad.map(p=>(
+                  <button key={p.id} onClick={()=>set({firstScorer:draft.firstScorer===p.id?null:p.id})} className={`press flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold transition-all ${draft.firstScorer===p.id?'border-em bg-em/15 text-white':'border-white/8 bg-white/4 text-slate-300 hover:border-white/20'}`}>
+                    <Flag iso={TEAM[p.team]?.iso} size={16}/>{p.name.split(' ').pop()}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>}
+        </>}
+        {m.status==='live'&&(
+          <div className="space-y-3">
+            {existing&&(
+              <div className="glass rounded-2xl p-4 border border-white/10">
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Your prediction</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="glass rounded-lg px-3 py-2 text-xs"><span className="text-slate-500">Winner</span><div className="font-bold text-white mt-0.5">{existing.winner==='HOME'?ht?.name:existing.winner==='AWAY'?at?.name:'Draw'}</div></div>
+                  <div className="glass rounded-lg px-3 py-2 text-xs"><span className="text-slate-500">Score</span><div className="font-bold text-white mt-0.5">{existing.hs} – {existing.as}</div></div>
+                  {existing.firstScorer&&<div className="glass rounded-lg px-3 py-2 text-xs"><span className="text-slate-500">First scorer</span><div className="font-bold text-white mt-0.5">{PLAYER[existing.firstScorer]?.name||existing.firstScorer}</div></div>}
+                  {existing.motm&&<div className="glass rounded-lg px-3 py-2 text-xs"><span className="text-slate-500">MOTM</span><div className="font-bold text-white mt-0.5">{PLAYER[existing.motm]?.name||existing.motm}</div></div>}
+                </div>
+              </div>
+            )}
+            <div className="text-center text-slate-500 text-xs py-1 flex items-center justify-center gap-1.5"><Ico name="lock" size={13}/>Match is live — predictions locked</div>
+          </div>
+        )}
+        {isTbd&&<div className="text-center py-8">
+          <div className="text-4xl mb-3">⏳</div>
+          <div className="font-bold text-white mb-1">Teams not yet determined</div>
+          <p className="text-sm text-slate-500">Predictions open once the teams are confirmed.</p>
+        </div>}
+      </div>
+      {canEdit&&(
+        <div className="p-4 border-t border-white/6 space-y-2">
+          <Btn className="w-full justify-center" size="lg" onClick={()=>{savePred(matchId,draft);onClose();}} disabled={!draft.winner||draft.hs==null||draft.as==null} icon="save">{existing?'Update prediction':'Save prediction'}</Btn>
+          <p className="text-center text-xs text-slate-500">{existing?'Editing your pick':'Winner + score required'}</p>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+/* ── HOME PAGE ── */
+function HomePage({setPage,openMatch}){
+  const{scores,myRank,preds,matches,leaderboard,user}=useWC();
+  const live=matches.filter(m=>m.status==='live');
+  const recent=matches.filter(m=>m.status==='finished').slice(-3).reverse();
+  const top5=leaderboard.slice(0,5);
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="glass rounded-3xl p-5 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 100% 70% at 80% -10%,rgb(var(--c-em)/.15),transparent 55%),radial-gradient(ellipse 60% 50% at 0% 100%,rgb(var(--c-bl)/.10),transparent 55%)'}}/>
+        <div className="relative">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2 flex-wrap"><Badge color="em">World Cup 2026</Badge><Badge>Canada · Mexico · USA</Badge></div>
+              <h1 className="font-display font-black text-2xl sm:text-3xl text-white">Hey, <span className="text-em">{user?.name?.split(' ')[0]||'Champion'}</span>! 👋</h1>
+              <p className="text-slate-400 text-sm mt-1.5 max-w-sm">Lock your calls, climb the board, out-predict your rivals.</p>
+              <div className="grid grid-cols-2 sm:flex gap-2 mt-4">
+                <Btn className="justify-center" onClick={()=>setPage('tournament')} icon="trophy">My Tournaments</Btn>
+                <Btn className="justify-center" variant="ghost" onClick={()=>setPage('matches')} icon="calendar-days">Predict</Btn>
+              </div>
+            </div>
+            <div className="glass rounded-2xl p-3 sm:p-4 shrink-0 overflow-x-auto">
+              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5"><Ico name="timer" size={12}/>World Cup Final</div>
+              <Countdown to={FINAL_TS}/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        {[['medal','Rank',`#${myRank}`,'gold'],['zap','Points',scores.total,'em'],['crosshair','Accuracy',`${scores.accuracy}%`,'blue'],['zap','Streak',scores.streak,'rose']].map(([icon,label,value,color])=>(
+          <div key={label} className="glass rounded-2xl p-3 sm:p-4">
+            <div className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1 ${color==='gold'?'text-gd':color==='em'?'text-em':color==='blue'?'text-blue-400':'text-rose-400'}`}><Ico name={icon} size={11}/><span className="hidden sm:inline">{label}</span><span className="sm:hidden">{label}</span></div>
+            <div className="font-display font-black text-xl sm:text-2xl text-white">{typeof value==='number'?<CountUp to={value}/>:value}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 space-y-5">
+          {live.length>0&&<div>
+            <div className="flex items-center gap-2 mb-3"><span className="w-2 h-2 rounded-full bg-rose-400 live"/><span className="font-display font-bold text-white text-sm">Live Now</span><Badge color="rose">{live.length} live</Badge></div>
+            <div className="space-y-3">{live.map(m=><MatchCard key={m.id} m={m} onClick={()=>openMatch(m.id)}/>)}</div>
+          </div>}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-display font-bold text-white text-sm">Latest Results</span>
+              <button onClick={()=>setPage('matches')} className="press text-xs text-em font-semibold">See all →</button>
+            </div>
+            <div className="space-y-3">{recent.map(m=><MatchCard key={m.id} m={m} onClick={()=>openMatch(m.id)}/>)}</div>
+          </div>
+          <div className="glass rounded-2xl p-4 border border-gd/20 relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 80% 60% at 100% 0%,rgb(var(--c-gd)/.1),transparent 60%)'}}/>
+            <div className="relative flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gd/15 grid place-items-center text-2xl shrink-0">⚡</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1"><span className="font-display font-bold text-white text-sm">Daily Challenge</span><Badge color="gold">+20 pts</Badge></div>
+                <p className="text-xs text-slate-400">Predict today's highest-scoring match for bonus points.</p>
+              </div>
+              <Btn size="sm" variant="ghost" onClick={()=>setPage('matches')}>Play</Btn>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-5">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-display font-bold text-white text-sm">🏆 Leaderboard</span>
+              <button onClick={()=>setPage('leaderboard')} className="press text-xs text-em font-semibold">Full →</button>
+            </div>
+            <div className="glass rounded-2xl overflow-hidden">
+              {top5.map((u,i)=>(
+                <div key={u.id} className={`flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 ${u.isYou?'bg-em/8':''}`}>
+                  <div className={`w-6 h-6 rounded-lg grid place-items-center text-xs font-black shrink-0 ${i===0?'bg-gd text-ink-950':i===1?'bg-slate-300 text-ink-950':i===2?'bg-amber-600 text-white':'bg-white/8 text-slate-400'}`}>{u.rank}</div>
+                  <span className="text-lg">{u.avatar}</span>
+                  <span className="text-sm font-semibold text-white flex-1 truncate">{u.isYou?'You':u.name}</span>
+                  <span className="font-display font-bold text-white text-sm tabular-nums">{u.pts}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="font-display font-bold text-white text-sm mb-3">📰 News</div>
+            <div className="space-y-2.5">
+              {NEWS.slice(0,3).map(n=>(
+                <div key={n.id} className="glass rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1"><Badge color={n.tag==='Live'?'rose':n.tag==='Result'?'em':'gold'}>{n.tag}</Badge><span className="text-[11px] text-slate-500">{n.time}</span></div>
+                  <div className="text-sm font-semibold text-white leading-snug">{n.title}</div>
+                  <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">{n.body}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── MATCHES PAGE ── */
+function MatchesPage({openMatch}){
+  const{matches,preds}=useWC();
+  const[filter,setFilter]=useState('all');
+  const filtered=matches.filter(m=>filter==='all'?true:m.status===filter).sort((a,b)=>a.kickoff-b.kickoff);
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="font-display font-black text-2xl text-white">Match Predictions</h1><p className="text-slate-400 text-sm mt-1">Predict before kickoff to earn points.</p></div>
+        <Badge color="em">{Object.keys(preds).length} predicted</Badge>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {['all','live','upcoming','finished'].map(t=>(
+          <button key={t} onClick={()=>setFilter(t)} className={`press px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${filter===t?'bg-em text-ink-950':'glass text-slate-400 hover:text-white'}`}>
+            {t==='all'?'All':t.charAt(0).toUpperCase()+t.slice(1)}
+          </button>
+        ))}
+      </div>
+      {filtered.length===0?<div className="text-center text-slate-500 py-16">No matches in this category.</div>:(
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">{filtered.map(m=><MatchCard key={m.id} m={m} onClick={()=>openMatch(m.id)}/>)}</div>
+      )}
+    </div>
+  );
+}
+
+/* ── LEADERBOARD ── */
+function LeaderboardPage(){
+  const{leaderboard,myRank,friends}=useWC();
+  const[tab,setTab]=useState('global');
+  const podium=leaderboard.slice(0,3);
+  const list=tab==='friends'?leaderboard.filter(u=>u.isYou||friends.includes(u.id)||friends.includes('url_'+u.id)):leaderboard;
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="flex items-center justify-between"><div><h1 className="font-display font-black text-2xl text-white">Live Leaderboard</h1><p className="text-slate-400 text-sm mt-1">Rankings update with every result.</p></div><Badge color="gold">You're #{myRank}</Badge></div>
+      <div className="glass rounded-2xl p-5">
+        <div className="grid grid-cols-3 gap-3 items-end">
+          {[1,0,2].map(slot=>{const u=podium[slot];if(!u)return<div key={slot}/>;const h=slot===0?'h-24':'h-16';return(
+            <div key={u.id} className="flex flex-col items-center">
+              <span className="text-3xl mb-1">{u.avatar}</span>
+              <div className="font-bold text-sm text-white truncate max-w-full text-center">{u.isYou?'You':(u.name||'?').split(' ')[0]}</div>
+              <div className="font-display font-black text-em text-sm">{u.pts}</div>
+              <div className={`w-full ${h} rounded-t-xl mt-2 flex items-start justify-center pt-2 ${slot===0?'bg-gd/20 border-t-2 border-gd':slot===1?'bg-slate-300/10 border-t-2 border-slate-300':'bg-amber-600/10 border-t-2 border-amber-600'}`}>
+                <span className={`font-black text-sm ${slot===0?'text-gd':slot===1?'text-slate-300':'text-amber-500'}`}>{u.rank}</span>
+              </div>
+            </div>
+          );})}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        {['global','friends'].map(t=><button key={t} onClick={()=>setTab(t)} className={`press px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab===t?'bg-em text-ink-950':'glass text-slate-400 hover:text-white'}`}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>)}
+      </div>
+      <div className="glass rounded-2xl overflow-hidden">
+        {list.map(u=>(
+          <div key={u.id} className={`flex items-center gap-3 px-4 py-4 border-b border-white/5 last:border-0 transition-all ${u.isYou?'bg-em/8 border-em/15':''}`}>
+            <div className={`w-9 h-9 rounded-xl grid place-items-center text-sm font-black shrink-0 tabular-nums ${u.rank===1?'bg-gd text-ink-950':u.rank===2?'bg-slate-300 text-ink-950':u.rank===3?'bg-amber-600 text-white':'bg-white/8 text-slate-400'}`}>{u.rank}</div>
+            <span className="text-2xl shrink-0">{u.avatar}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-white truncate">{u.isYou?<span>You <Badge color="em">me</Badge></span>:u.name}</div>
+              <div className="text-xs text-slate-500">{u.acc}% accuracy</div>
+            </div>
+            {u.move!==0&&<div className={`text-xs font-bold flex items-center gap-0.5 ${u.move>0?'text-em':'text-rose-400'}`}><Ico name={u.move>0?'arrow-up':'arrow-down'} size={12}/>{Math.abs(u.move)}</div>}
+            <div className="text-right"><div className="font-display font-bold text-white text-lg tabular-nums">{u.pts}</div><div className="text-[10px] text-slate-500 font-semibold">PTS</div></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── PROFILE (with Friends tab) ── */
+function ProfilePage({setPage,openMatch}){
+  const{user,scores,myRank,preds,matches,tPicks,friends,earnedBadgeIds,virtualFriends}=useWC();
+  const[tab,setTab]=useState('stats');
+  const finished=matches.filter(m=>m.status==='finished'&&preds[m.id]).reverse();
+  const friendUsers=friends.map(id=>(virtualFriends&&virtualFriends[id])).filter(Boolean);
+  const earnedIds=earnedBadgeIds;
+
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="glass rounded-3xl p-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 80% 60% at 80% -20%,rgb(var(--c-em)/.12),transparent 55%)'}}/>
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="w-20 h-20 rounded-3xl bg-em/15 grid place-items-center text-5xl ring-2 ring-em/30">{user?.avatar||'⚽'}</div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-display font-black text-2xl text-white">{user?.name||'You'}</h1>
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              {user?.favTeam&&<div className="flex items-center gap-1.5 text-sm text-slate-400"><Flag iso={TEAM[user.favTeam]?.iso} size={18}/>{TEAM[user.favTeam]?.name}</div>}
+              <Badge color="gold">Rank #{myRank}</Badge>
+              <Badge>{friendUsers.length} friend{friendUsers.length!==1?'s':''}</Badge>
+            </div>
+          </div>
+          <Btn variant="ghost" size="sm" onClick={()=>setPage('settings')} icon="settings">Edit</Btn>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2">
+        {[['stats','Stats'],['badges','Badges']].map(([id,lbl])=>(
+          <button key={id} onClick={()=>setTab(id)} className={`press px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab===id?'bg-em text-ink-950':'glass text-slate-400 hover:text-white'}`}>{lbl}</button>
+        ))}
+        <button onClick={()=>setPage('friends')} className="press px-4 py-2 rounded-xl text-sm font-semibold glass text-slate-400 hover:text-white flex items-center gap-1.5"><Ico name="users" size={14}/>Friends</button>
+      </div>
+
+      {tab==='stats'&&<>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[['Total points',scores.total,'em'],['Accuracy',`${scores.accuracy}%`,'blue'],['Correct picks',scores.correct,'em'],['Best streak',scores.streak,'gold']].map(([label,value,color])=>(
+            <div key={label} className="glass rounded-2xl p-4">
+              <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${color==='gold'?'text-gd':color==='em'?'text-em':'text-blue-400'}`}>{label}</div>
+              <div className="font-display font-black text-2xl text-white">{typeof value==='number'?<CountUp to={value}/>:value}</div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div className="font-display font-bold text-white text-sm mb-3">Prediction History</div>
+          {finished.length===0?<div className="glass rounded-2xl p-8 text-center text-slate-500 text-sm">No settled predictions yet. Go predict some matches!</div>:(
+            <div className="glass rounded-2xl overflow-hidden">
+              {finished.map(m=>{const r=scoreMatch(preds[m.id],m);return(
+                <button key={m.id} onClick={()=>openMatch(m.id)} className="press w-full flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/4 text-left">
+                  <div className="flex items-center gap-1.5 shrink-0"><Flag iso={TEAM[m.home]?.iso} size={22}/><span className="font-bold text-white text-sm tabular-nums">{m.hs}–{m.as}</span><Flag iso={TEAM[m.away]?.iso} size={22}/></div>
+                  <span className="text-xs text-slate-500 flex-1 truncate">{m.round}</span>
+                  <span className={`font-display font-bold text-sm ${r.pts>0?'text-em':'text-slate-600'}`}>{r.pts>0?`+${r.pts}`:'+0'}</span>
+                </button>
+              );})}
+            </div>
+          )}
+        </div>
+        <div>
+          <div className="font-display font-bold text-white text-sm mb-3">Tournament Picks</div>
+          <div className="grid grid-cols-2 gap-2">
+            {[['🏆','Champion',tPicks.champion?<span className="flex items-center gap-1"><Flag iso={TEAM[tPicks.champion]?.iso} size={16}/>{tPicks.champion}</span>:'—'],
+              ['⚽','Golden Boot',tPicks.topScorer?PLAYER[tPicks.topScorer]?.name?.split(' ').pop()||tPicks.topScorer:'—'],
+              ['🥇','Top 4',tPicks.top4.filter(Boolean).length?<div className="flex gap-1">{tPicks.top4.filter(Boolean).map(c=><Flag key={c} iso={TEAM[c]?.iso} size={14}/>)}</div>:'—'],
+              ['🚪','First out',tPicks.firstOut?<span className="flex items-center gap-1"><Flag iso={TEAM[tPicks.firstOut]?.iso} size={16}/>{tPicks.firstOut}</span>:'—']
+            ].map(([icon,label,val])=>(
+              <div key={label} className="glass rounded-xl p-3"><div className="text-xs text-slate-500 font-bold mb-1">{icon} {label}</div><div className="text-sm font-bold text-white flex items-center gap-1">{val}</div></div>
+            ))}
+          </div>
+        </div>
+      </>}
+
+
+      {tab==='badges'&&(
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-1"><span className="font-display font-bold text-white text-sm">Achievements</span><span className="text-xs text-slate-500">{earnedIds.size}/{BADGES.length} unlocked</span></div>
+          {BADGES.map(b=>{const earned=earnedIds.has(b.id);return(
+            <div key={b.id} className={`glass rounded-xl p-3.5 flex items-center gap-3 border transition-all ${earned?'border-em/25':'border-white/5 opacity-50'}`}>
+              <div className={`w-10 h-10 rounded-xl grid place-items-center text-xl shrink-0 ${earned?'bg-em/15':'bg-white/5'}`}>{earned?b.icon:'🔒'}</div>
+              <div className="flex-1 min-w-0"><div className={`text-sm font-bold ${earned?'text-white':'text-slate-500'}`}>{b.name}</div><div className="text-xs text-slate-500 leading-snug">{b.desc}</div></div>
+              {earned&&<Ico name="check-circle" size={18} className="text-em shrink-0"/>}
+            </div>
+          );})}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── TOURNAMENT PAGE ── */
+function TournamentPage({autoJoinCode,onAutoJoinDone}){
+  const{tournaments,setTournaments,user,tPicks,setTPicks,toast,pushNotif,friends,joinByCode,scores,virtualFriends}=useWC();
+  const[view,setView]=useState('list');
+  const[activeId,setActiveId]=useState(null);
+  const{myCode}=useWC();
+  const[createOpen,setCreateOpen]=useState(false);
+  useEffect(()=>{
+    if(!autoJoinCode||!user)return;
+    joinByCode(autoJoinCode,user.name,user.avatar,myCode).then(result=>{
+      if(result==='already')toast('You\'re already in this tournament!');
+      else if(!result)toast('Tournament not found.','err');
+      onAutoJoinDone&&onAutoJoinDone();
+    });
+  },[autoJoinCode,user,joinByCode,myCode,toast]);
+
+  const createTournament=async(name)=>{
+    const code=genCode();
+    const t={
+      id:'t'+Date.now(),name,code,fbCode:code,creatorIsYou:true,createdAt:Date.now(),
+      members:[],
+    };
+    setTournaments(ts=>[...ts,t]);
+    // Write to Firebase — members listener will populate local state
+    try{
+      await fbSet(`tournaments/${code}`,{name,code,creator:user.name,creatorAvatar:user.avatar,createdAt:Date.now(),members:{[myCode]:{name:user.name,avatar:user.avatar,pts:scores.total,joinedAt:Date.now()}}});
+    }catch(e){console.warn('Firebase write failed',e);}
+    setCreateOpen(false);
+    toast(`Tournament "${name}" created!`);
+    pushNotif({type:'announcement',msg:`Your tournament "${name}" is live! Copy the invite link and send it to friends.`});
+  };
+
+  if(view==='picks'){
+    const tourn=tournaments.find(t=>t.id===activeId);
+    return<PicksView tourn={tourn} onBack={()=>setView('list')}/>;
+  }
+  if(view==='detail'){
+    const tourn=tournaments.find(t=>t.id===activeId);
+    if(tourn) return<TournamentDetail tourn={tourn} onBack={()=>setView('list')} onPicks={()=>setView('picks')} scores={scores}/>;
+  }
+
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="font-display font-black text-2xl text-white">Tournaments</h1><p className="text-slate-400 text-sm mt-1">Create a private league and share the link to invite friends.</p></div>
+        <Btn onClick={()=>setCreateOpen(true)} icon="plus">Create</Btn>
+      </div>
+
+      {tournaments.length===0?(
+        <div className="glass rounded-3xl p-12 text-center" style={{background:'radial-gradient(ellipse 100% 70% at 50% -20%,rgb(var(--c-em)/.10),transparent 60%)'}}>
+          <div className="text-6xl mb-4">🏆</div>
+          <h2 className="font-display font-bold text-xl text-white mb-2">No tournaments yet</h2>
+          <p className="text-slate-400 text-sm mb-6 max-w-sm mx-auto">Create your own private league and share the link — friends join instantly.</p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Btn size="lg" onClick={()=>setCreateOpen(true)} icon="plus">Create Tournament</Btn>
+          </div>
+        </div>
+      ):(
+        <div className="grid sm:grid-cols-2 gap-4">
+          {tournaments.map(t=>{
+            /* live points for user in this tournament */
+            const members=[...t.members].map(m=>m.isYou?{...m,pts:scores.total}:m).sort((a,b)=>b.pts-a.pts);
+            const myPos=members.findIndex(m=>m.isYou)+1;
+            return(
+              <div key={t.id} className="glass rounded-2xl p-5 flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex gap-2 mb-1.5 flex-wrap"><Badge color="gold">Host</Badge><Badge>{t.members.length} players</Badge></div>
+                    <h3 className="font-display font-bold text-lg text-white">{t.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <button onClick={()=>{
+                        const url=makeJoinUrl(t,user);
+                        try{navigator.clipboard&&navigator.clipboard.writeText(url)}catch(e){};
+                        toast('Join link copied! Send it to friends.');
+                      }} className="press text-xs text-slate-400 hover:text-em bg-white/5 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors">
+                        <Ico name="copy" size={11}/>Copy invite link
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-xs text-slate-500 mb-0.5">Your position</div>
+                    <div className="font-display font-black text-2xl text-white">#{myPos}</div>
+                  </div>
+                </div>
+                {/* Mini standings preview (top 3) */}
+                <div className="glass rounded-xl overflow-hidden">
+                  {members.slice(0,3).map((m,i)=>(
+                    <div key={i} className={`flex items-center gap-2.5 px-3 py-2 border-b border-white/4 last:border-0 ${m.isYou?'bg-em/8':''}`}>
+                      <div className={`w-5 h-5 rounded-md grid place-items-center text-[10px] font-black shrink-0 ${i===0?'bg-gd text-ink-950':i===1?'bg-slate-300 text-ink-950':i===2?'bg-amber-600 text-white':'bg-white/8 text-slate-400'}`}>{i+1}</div>
+                      <span className="text-base">{m.avatar||'⚽'}</span>
+                      <span className="text-xs font-semibold text-white flex-1 truncate">{m.isYou?'You':(m.name||'Player')}</span>
+                      <span className="font-display font-bold text-white text-xs tabular-nums">{m.pts} pts</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Btn className="flex-1" variant="subtle" onClick={()=>{setActiveId(t.id);setView('detail');}} icon="bar-chart-2">Standings</Btn>
+                  <Btn className="flex-1" onClick={()=>{setActiveId(t.id);setView('picks');}} icon="list-checks">My Picks</Btn>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {createOpen&&<CreateTournModal onClose={()=>setCreateOpen(false)} onCreate={createTournament}/>}
+    </div>
+  );
+}
+
+/* ── TOURNAMENT DETAIL (PL-style standings) ── */
+function TournamentDetail({tourn,onBack,onPicks,scores}){
+  const{friends,setTournaments,toast,virtualFriends}=useWC();
+  const members=[...tourn.members].map(m=>m.isYou?{...m,pts:scores.total}:m).sort((a,b)=>b.pts-a.pts);
+  const{matches}=useWC();
+  const totalMatches=matches.filter(m=>m.status==='finished').length;
+  const[showAdd,setShowAdd]=useState(false);
+  const[confirmRemove,setConfirmRemove]=useState(null); // member object to remove
+
+  const removeMember=m=>{
+    setTournaments(ts=>ts.map(t=>{
+      if(t.id!==tourn.id)return t;
+      return{...t,members:t.members.filter(x=>x.name!==m.name)};
+    }));
+    if(tourn.fbCode&&m.id)fbSet(`tournaments/${tourn.fbCode}/members/${m.id}`,null).catch(()=>{});
+    toast(`${m.name} removed`);
+    setConfirmRemove(null);
+  };
+
+  // Friends not already in this tournament
+  const existingIds=new Set(tourn.members.map(m=>m.id).filter(Boolean));
+  const addableFriends=friends.map(id=>virtualFriends&&virtualFriends[id]).filter(u=>u&&!existingIds.has(u.id));
+
+  const addMember=u=>{
+    setTournaments(ts=>ts.map(t=>t.id===tourn.id
+      ?{...t,members:[...t.members,{id:u.id,name:u.name,avatar:u.avatar,pts:u.pts,isYou:false}]}
+      :t));
+    toast(`${u.name} added to ${tourn.name}!`);
+  };
+
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div className="flex items-center gap-3">
+        <button onClick={onBack} className="press w-10 h-10 glass rounded-xl grid place-items-center text-slate-300 shrink-0"><Ico name="arrow-left" size={18}/></button>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-display font-black text-xl text-white truncate">{tourn.name}</h1>
+        </div>
+        <Btn size="sm" onClick={onPicks} icon="list-checks">My Picks</Btn>
+      </div>
+
+      {/* League table — PL-style */}
+      <div className="glass rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-[40px_1fr_80px] px-4 py-2.5 border-b border-white/8">
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">#</div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 pl-2">Player</div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">PTS</div>
+        </div>
+        {members.map((m,i)=>{
+          const isTop=i<1,isPromo=i<3,isRel=i>=members.length-1&&members.length>3;
+          return(
+            <div key={i} className={`pl-row grid grid-cols-[40px_1fr_80px] items-center px-4 py-3.5 border-b border-white/5 last:border-0 relative ${m.isYou?'bg-em/8':''}`}>
+              {isTop&&<div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gd"/>}
+              {!isTop&&isPromo&&<div className="absolute left-0 top-0 bottom-0 w-0.5 bg-em"/>}
+              {isRel&&<div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-500"/>}
+              <div className={`grid place-items-center w-7 h-7 rounded-lg text-sm font-black mx-auto ${i===0?'bg-gd text-ink-950':i===1?'bg-slate-300 text-ink-950':i===2?'bg-amber-600 text-white':'bg-white/6 text-slate-400'}`}>{i+1}</div>
+              <div className="flex items-center gap-3 pl-2">
+                <span className="text-2xl">{m.avatar||'⚽'}</span>
+                <div className="min-w-0">
+                  <div className="font-bold text-white text-sm truncate">{m.isYou?<span>You<Badge color="em" className="ml-1.5">me</Badge></span>:(m.name||'Player')}</div>
+                  {i===0&&<div className="text-[10px] text-gd font-bold">🥇 Leader</div>}
+                  {i===members.length-1&&members.length>1&&i!==0&&<div className="text-[10px] text-rose-400 font-bold">Bottom</div>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 justify-end">
+                <div className="text-right">
+                  <div className="font-display font-bold text-white tabular-nums">{m.pts}</div>
+                  <div className="text-[10px] text-slate-500">pts</div>
+                </div>
+                {!m.isYou&&<button onClick={()=>setConfirmRemove(m)} className="press w-7 h-7 rounded-lg grid place-items-center text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"><Ico name="x" size={14}/></button>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {confirmRemove&&(
+        <Modal onClose={()=>setConfirmRemove(null)}>
+          <div className="p-6 text-center">
+            <div className="text-4xl mb-3">{confirmRemove.avatar||'👤'}</div>
+            <h3 className="font-display font-bold text-white text-lg mb-1">Remove {confirmRemove.name}?</h3>
+            <p className="text-slate-400 text-sm mb-6">They will be removed from this tournament.</p>
+            <div className="flex gap-3 justify-center">
+              <Btn variant="ghost" onClick={()=>setConfirmRemove(null)}>No, keep them</Btn>
+              <Btn variant="danger" onClick={()=>removeMember(confirmRemove)}>Yes, remove</Btn>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gd"/>Leader</span>
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-em"/>Top 3</span>
+        {members.length>3&&<span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"/>Bottom</span>}
+      </div>
+
+      {/* Add members section */}
+      <div className="glass rounded-2xl overflow-hidden border border-white/6">
+        <button onClick={()=>setShowAdd(o=>!o)} className="press w-full flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-em/12 grid place-items-center"><Ico name="user-plus" size={17} className="text-em"/></div>
+            <div className="text-left">
+              <div className="font-display font-bold text-white text-sm">Add members</div>
+              <div className="text-xs text-slate-500">{addableFriends.length} friend{addableFriends.length!==1?'s':''} you can invite</div>
+            </div>
+          </div>
+          <Ico name={showAdd?'chevron-up':'chevron-down'} size={18} className="text-slate-500"/>
+        </button>
+
+        {showAdd&&(
+          <div className="border-t border-white/6 px-4 pb-4 pt-3 space-y-2 sup">
+            {addableFriends.length===0?(
+              <div className="text-center text-sm text-slate-500 py-4">
+                {friends.length===0
+                  ?'You have no friends yet — add some from Profile → Friends.'
+                  :'All your friends are already in this tournament! 🎉'}
+              </div>
+            ):addableFriends.map(u=>(
+              <div key={u.id} className="flex items-center gap-3 glass rounded-xl px-3 py-2.5">
+                <span className="text-xl">{u.avatar}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-white">{u.name}</div>
+                  <div className="text-xs text-slate-500">{u.pts} pts · {u.acc}% accuracy</div>
+                </div>
+                <Btn size="sm" onClick={()=>addMember(u)} icon="plus">Add</Btn>
+              </div>
+            ))}
+            <p className="text-[11px] text-slate-600 text-center pt-1">Share the invite link from the tournament card to add more members.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="glass rounded-2xl p-4 text-center text-sm text-slate-400">
+        <Ico name="info" size={14} className="text-em inline-block mr-1.5"/>
+        Points based on live match predictions · {totalMatches} match{totalMatches!==1?'es':''} settled so far
+      </div>
+    </div>
+  );
+}
+
+/* ── CREATE TOURNAMENT MODAL ── */
+function CreateTournModal({onClose,onCreate}){
+  const[name,setName]=useState('');
+  const canCreate=name.trim().length>=2;
+  const previewCode=useMemo(()=>genCode(),[]);
+  return(
+    <Modal onClose={onClose}>
+      <div className="p-5 border-b border-white/6 flex items-center justify-between">
+        <div><h3 className="font-display font-bold text-white">Create Tournament</h3><p className="text-xs text-slate-500">Name it — share the join link to invite people.</p></div>
+        <button onClick={onClose} className="press w-8 h-8 glass rounded-xl grid place-items-center text-slate-400"><Ico name="x" size={16}/></button>
+      </div>
+      <div className="p-5 space-y-5">
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Tournament name</label>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. The Group Chat Cup" autoFocus/>
+        </div>
+        <div className="glass rounded-xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-em/15 grid place-items-center shrink-0"><Ico name="hash" size={18} className="text-em"/></div>
+          <div className="flex-1">
+            <div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Your tournament code</div>
+            <div className="font-mono font-black text-em text-2xl tracking-widest">{previewCode}</div>
+          </div>
+        </div>
+        <div className="glass rounded-xl p-4 text-sm text-slate-400 flex items-start gap-3">
+          <Ico name="info" size={16} className="text-em shrink-0 mt-0.5"/>
+          <span>After creating, tap <b className="text-white">Copy link</b> on the tournament card and send it to friends. They open the link and join instantly.</span>
+        </div>
+      </div>
+      <div className="p-4 border-t border-white/6 flex gap-2 justify-end">
+        <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
+        <Btn disabled={!canCreate} onClick={()=>onCreate(name)} icon="arrow-right">Create Tournament</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+/* ── JOIN TOURNAMENT MODAL ── */
+function JoinTournModal({onClose,prefillCode}){
+  const{user,joinByCode}=useWC();
+  const[code,setCode]=useState(prefillCode||'');
+  const[status,setStatus]=useState(null); // null | 'notfound' | 'already' | 'ok'
+
+  const{myCode}=useWC();
+  const tryJoin=async()=>{
+    if(code.trim().length<4)return;
+    const result=await joinByCode(code,user.name,user.avatar,myCode);
+    if(result===true)setStatus('ok');
+    else if(result==='already')setStatus('already');
+    else setStatus('notfound');
+  };
+
+  return(
+    <Modal onClose={onClose}>
+      <div className="p-5 border-b border-white/6 flex items-center justify-between">
+        <div><h3 className="font-display font-bold text-white">Join a Tournament</h3><p className="text-xs text-slate-500">Enter the 6-character code shared by the host.</p></div>
+        <button onClick={onClose} className="press w-8 h-8 glass rounded-xl grid place-items-center text-slate-400"><Ico name="x" size={16}/></button>
+      </div>
+      <div className="p-6 space-y-4">
+        {status==='ok'?(
+          <div className="text-center py-6 sup">
+            <div className="text-5xl mb-3">🎉</div>
+            <div className="font-display font-black text-xl text-white mb-1">You're in!</div>
+            <p className="text-slate-400 text-sm mb-4">Tournament joined successfully.</p>
+            <Btn onClick={onClose} icon="check">View Tournaments</Btn>
+          </div>
+        ):(
+          <>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Tournament Code</label>
+              <input
+                value={code} onChange={e=>setCode(e.target.value)}
+                placeholder="e.g. WC7K2P"
+                className="text-center font-mono font-black text-em text-2xl tracking-widest h-14"
+                maxLength={6}
+                onKeyDown={e=>e.key==='Enter'&&tryJoin()}
+              />
+              {status==='notfound'&&<p className="text-rose-400 text-xs mt-1.5 font-semibold">No tournament found with that code. Check with your host.</p>}
+              {status==='already'&&<p className="text-gd text-xs mt-1.5 font-semibold">You're already in this tournament!</p>}
+            </div>
+            <Btn className="w-full" onClick={tryJoin} disabled={code.length<4} icon="log-in">Join Tournament</Btn>
+            <p className="text-center text-xs text-slate-600">Ask the tournament creator for their 6-character code.</p>
+          </>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+/* ── PICKS VIEW ── */
+function PicksSec({n,icon,title,sub,done,locked,children}){
+  return(
+    <div className="glass rounded-2xl p-5">
+      <div className="flex items-start gap-3 mb-4">
+        <div className={`w-10 h-10 rounded-xl grid place-items-center text-xl shrink-0 ${done?'bg-em/15':'bg-white/5'}`}>{icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2"><span className="text-xs font-bold text-slate-500">STEP {n}</span>{done&&<span className="text-em text-xs">✓</span>}</div>
+          <h3 className="font-display font-bold text-white">{title}</h3>
+          <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+        </div>
+      </div>
+      <div className={locked?'opacity-60 pointer-events-none':''}>{children}</div>
+    </div>
+  );
+}
+
+function PicksView({tourn,onBack}){
+  const{tPicks,setTPicks,toast,scores}=useWC();
+  const[q,setQ]=useState('');
+  const locked=tPicks.locked;
+  const set=patch=>setTPicks(p=>({...p,...patch}));
+  const toggleTop4=code=>{
+    if(locked)return;
+    const arr=[...tPicks.top4];const idx=arr.indexOf(code);
+    if(idx>=0)arr[idx]=null;else{const open=arr.indexOf(null);if(open>=0)arr[open]=code;}
+    set({top4:arr});
+  };
+  const filteredPlayers=PLAYERS.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+  const complete=tPicks.champion&&tPicks.top4.filter(Boolean).length===4&&tPicks.topScorer&&tPicks.firstOut;
+  const maxPts=SCORING.champion+SCORING.top4*4+SCORING.topScorer+SCORING.firstOut;
+
+  return(
+    <div className="space-y-5 pb-28 lg:pb-8">
+      <div className="flex items-center gap-3">
+        <button onClick={onBack} className="press w-10 h-10 glass rounded-xl grid place-items-center text-slate-300 shrink-0"><Ico name="arrow-left" size={18}/></button>
+        <div>
+          <h1 className="font-display font-black text-xl text-white">Choose Your Picks</h1>
+          <p className="text-slate-400 text-xs">{tourn?.name||'Tournament'} · up to {maxPts} pts</p>
+        </div>
+        <div className="ml-auto">{locked?<Badge color="gold">🔒 Locked</Badge>:complete?<Badge color="em">Ready to lock</Badge>:<Badge>{[tPicks.champion,tPicks.top4.filter(Boolean).length===4,tPicks.topScorer,tPicks.firstOut].filter(Boolean).length}/4</Badge>}</div>
+      </div>
+
+      <PicksSec locked={locked} n={1} icon="🏆" title="World Cup Winner" sub={`Who lifts the trophy? · +${SCORING.champion} pts`} done={!!tPicks.champion}>
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {TEAMS.map(t=>{const on=tPicks.champion===t.id;return(
+            <button key={t.id} onClick={()=>set({champion:on?null:t.id})} className={`press flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all ${on?'border-em bg-em/15':'border-white/8 bg-white/4 hover:border-white/20'}`}>
+              <Flag iso={t.iso} size={36}/><span className="text-[10px] font-bold text-slate-300">{t.id}</span>{on&&<Ico name="check-circle" size={14} className="text-em"/>}
+            </button>
+          );})}
+        </div>
+      </PicksSec>
+
+      <PicksSec locked={locked} n={2} icon="🥇" title="Top 4 Finish" sub={`Pick your semi-finalists in order · +${SCORING.top4} pts each`} done={tPicks.top4.filter(Boolean).length===4}>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {tPicks.top4.map((code,i)=>(
+            <div key={i} className={`rounded-xl border p-2.5 text-center ${code?'bg-em/12 border-em/35':'bg-white/4 border-dashed border-white/12'}`}>
+              <div className="text-[10px] font-bold text-slate-400 mb-1.5">{['1st','2nd','3rd','4th'][i]}</div>
+              {code?<><Flag iso={TEAM[code]?.iso} size={32} className="mx-auto block"/><div className="text-[10px] font-bold text-white mt-1">{code}</div></>:<div className="text-slate-600 text-xl py-1">—</div>}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+          {TEAMS.map(t=>{const pos=tPicks.top4.indexOf(t.id);const on=pos>=0;const full=tPicks.top4.filter(Boolean).length>=4&&!on;return(
+            <button key={t.id} disabled={full} onClick={()=>toggleTop4(t.id)} className={`press relative flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${on?'border-em bg-em/15':full?'opacity-25 border-white/5 cursor-not-allowed':'border-white/8 bg-white/4 hover:border-white/20'}`}>
+              <Flag iso={t.iso} size={28}/><span className="text-[10px] font-bold text-slate-300">{t.id}</span>
+              {on&&<span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-em text-ink-950 text-[10px] font-black grid place-items-center">{pos+1}</span>}
+            </button>
+          );})}
+        </div>
+      </PicksSec>
+
+      <PicksSec locked={locked} n={3} icon="⚽" title="Golden Boot" sub={`Tournament top scorer · +${SCORING.topScorer} pts`} done={!!tPicks.topScorer}>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search players..." className="mb-3 text-sm"/>
+        <div className="grid sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+          {filteredPlayers.map(p=>{const on=tPicks.topScorer===p.id;return(
+            <button key={p.id} onClick={()=>set({topScorer:on?null:p.id})} className={`press flex items-center gap-2.5 p-2.5 rounded-xl border transition-all text-left ${on?'border-em bg-em/15':'border-white/8 bg-white/4 hover:border-white/20'}`}>
+              <Flag iso={TEAM[p.team]?.iso} size={24}/>
+              <div className="min-w-0 flex-1"><div className={`text-sm font-bold truncate ${on?'text-white':'text-slate-200'}`}>{p.name}</div><div className="text-xs text-slate-500">{TEAM[p.team]?.name} · {p.pos}</div></div>
+              {on&&<Ico name="check-circle" size={16} className="text-em shrink-0"/>}
+            </button>
+          );})}
+        </div>
+      </PicksSec>
+
+      <PicksSec locked={locked} n={4} icon="🚪" title="First Eliminated" sub={`Who goes out first? · +${SCORING.firstOut} pts`} done={!!tPicks.firstOut}>
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {TEAMS.map(t=>{const on=tPicks.firstOut===t.id;return(
+            <button key={t.id} onClick={()=>set({firstOut:on?null:t.id})} className={`press flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all ${on?'border-rose-500 bg-rose-500/15':'border-white/8 bg-white/4 hover:border-white/20'}`}>
+              <Flag iso={t.iso} size={36}/><span className="text-[10px] font-bold text-slate-300">{t.id}</span>
+            </button>
+          );})}
+        </div>
+      </PicksSec>
+
+      <div className="sticky bottom-20 lg:bottom-4 z-20">
+        <div className="glass2 rounded-2xl p-3.5 flex items-center justify-between gap-3 border border-white/8">
+          <div className="text-sm text-slate-400 px-1">{locked?<span className="text-gd font-semibold">🔒 Picks locked in</span>:complete?<span className="text-em font-semibold">All done — lock it in!</span>:'Complete all 4 steps to lock'}</div>
+          {locked?<Btn variant="ghost" icon="lock-open" onClick={()=>set({locked:false})}>Unlock</Btn>
+          :<Btn variant="gold" icon="lock" disabled={!complete} onClick={()=>set({locked:true})}>Lock Predictions</Btn>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SETTINGS ── */
+function SettingsPage(){
+  const{user,setUser,palette,setPalette,PALETTES,PALETTE_NAMES,signOut,toast}=useWC();
+  const[name,setName]=useState(user?.name||'');
+  const[avatar,setAvatar]=useState(user?.avatar||'⚽');
+  const[favTeam,setFavTeam]=useState(user?.favTeam||'');
+  const save=()=>{setUser({...user,name:name.trim()||user.name,avatar,favTeam});toast('Profile saved!');};
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <h1 className="font-display font-black text-2xl text-white">Settings</h1>
+      <div className="glass rounded-2xl p-5 space-y-4">
+        <div className="font-display font-bold text-white text-sm">Profile</div>
+        <div><label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Display name</label><input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/></div>
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Avatar</label>
+          <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">{AVATARS.map(a=><button key={a} onClick={()=>setAvatar(a)} className={`press aspect-square rounded-xl grid place-items-center text-xl border transition-all ${avatar===a?'border-em bg-em/15 scale-105':'border-white/8 bg-white/4 hover:border-white/20'}`}>{a}</button>)}</div>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Favourite team</label>
+          <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 max-h-28 overflow-y-auto pr-1">{TEAMS.map(t=><button key={t.id} onClick={()=>setFavTeam(t.id)} title={t.name} className={`press aspect-square rounded-lg grid place-items-center border transition-all ${favTeam===t.id?'border-em bg-em/15 scale-105':'border-white/8 bg-white/4 hover:border-white/20'}`}><Flag iso={t.iso} size={24}/></button>)}</div>
+        </div>
+        <Btn onClick={save} icon="save">Save profile</Btn>
+      </div>
+      <div className="glass rounded-2xl p-5">
+        <div className="font-display font-bold text-white text-sm mb-3">Theme</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {PALETTES.map((p,i)=>{const on=palette===i;return(
+            <button key={i} onClick={()=>setPalette(i)} className={`press rounded-xl border p-3 transition-all ${on?'border-em bg-em/8':'border-white/8 bg-white/4 hover:border-white/20'}`}>
+              <div className="flex gap-1.5 justify-center mb-2"><span className="w-5 h-5 rounded-full ring-1 ring-white/20" style={{background:`rgb(${p.em})`}}/><span className="w-5 h-5 rounded-full ring-1 ring-white/20" style={{background:`rgb(${p.gd})`}}/><span className="w-5 h-5 rounded-full ring-1 ring-white/20" style={{background:`rgb(${p.bl})`}}/></div>
+              <div className="text-xs font-bold text-slate-300 text-center">{PALETTE_NAMES[i]}</div>
+            </button>
+          );})}
+        </div>
+      </div>
+      <div className="glass rounded-2xl p-5 border border-rose-500/20">
+        <div className="font-display font-bold text-white text-sm mb-1">Danger zone</div>
+        <p className="text-xs text-slate-400 mb-3">Clears all your picks and progress from this device.</p>
+        <Btn variant="danger" onClick={signOut} icon="log-out">Sign out & reset</Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ── BADGE POPUP ── */
+function BadgePopup(){
+  const{activeBadge,dismissBadge}=useWC();
+  if(!activeBadge)return null;
+  return(
+    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[300] pop" style={{minWidth:300,maxWidth:'90vw'}}>
+      <div className="glass2 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-2xl" style={{border:'1px solid rgb(251 191 36 / 0.5)'}}>
+        <div className="w-12 h-12 rounded-2xl grid place-items-center text-3xl shrink-0" style={{background:'rgb(251 191 36 / 0.2)'}}>{activeBadge.icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{color:'rgb(251 191 36)'}}>Achievement Unlocked!</div>
+          <div className="font-display font-black text-white text-base leading-tight">{activeBadge.name}</div>
+          <div className="text-xs text-slate-400 mt-0.5">{activeBadge.desc}</div>
+        </div>
+        <button onClick={dismissBadge} className="press w-7 h-7 rounded-xl grid place-items-center text-slate-400 hover:text-white shrink-0" style={{background:'rgba(255,255,255,0.08)'}}>
+          <Ico name="x" size={14}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── FRIENDS PAGE ── */
+function FriendsPage(){
+  const{friends,removeFriend,sendFriendRequest,myCode,toast,user,virtualFriends}=useWC();
+  const[code,setCode]=useState('');
+  const[status,setStatus]=useState(null); // null | 'sent' | 'notfound' | 'already'
+  const friendUsers=friends.map(id=>(virtualFriends&&virtualFriends[id])).filter(Boolean);
+
+  const handleSend=async()=>{
+    const result=await sendFriendRequest(code,user?.name,user?.avatar,myCode);
+    setStatus(result);
+    if(result==='sent')setCode('');
+  };
+
+  return(
+    <div className="space-y-5 pb-24 lg:pb-6">
+      <div>
+        <h1 className="font-display font-black text-2xl text-white">Friends</h1>
+        <p className="text-slate-400 text-sm mt-1">Share your code so others can add you, or enter their code to send a request.</p>
+      </div>
+
+      {/* Your friend link */}
+      <div className="glass rounded-2xl p-5 border border-em/20 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(ellipse 80% 60% at 100% -20%,rgb(var(--c-em)/.10),transparent 60%)'}}/>
+        <div className="relative">
+          <div className="text-xs font-bold text-em uppercase tracking-wider mb-3 flex items-center gap-1.5"><Ico name="user-plus" size={13}/>Your Friend Link</div>
+          <button onClick={()=>{const url=makeFriendUrl(user?.name||'Friend',user?.avatar||'⚽',myCode);try{navigator.clipboard&&navigator.clipboard.writeText(url)}catch(e){};toast('Friend link copied!');}} className="press w-full glass rounded-2xl px-5 py-4 flex items-center justify-between gap-4 hover:border-em/40 transition-all border border-white/8">
+            <div>
+              <div className="font-bold text-white text-sm">Copy your invite link</div>
+              <div className="text-xs text-slate-400 mt-0.5">Send it to a friend — when they open it they can add you instantly</div>
+            </div>
+            <Ico name="copy" size={20} className="text-em shrink-0"/>
+          </button>
+        </div>
+      </div>
+
+      {/* Friends list */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-display font-bold text-white text-sm">Your Friends</span>
+          <Badge>{friendUsers.length}</Badge>
+        </div>
+        {friendUsers.length===0?(
+          <div className="glass rounded-2xl p-10 text-center">
+            <div className="text-5xl mb-3">👥</div>
+            <div className="font-display font-bold text-white mb-1">No friends yet</div>
+            <p className="text-sm text-slate-500 max-w-xs mx-auto">Enter a friend's code above and accept the request in notifications to add them.</p>
+          </div>
+        ):(
+          <div className="glass rounded-2xl overflow-hidden">
+            {friendUsers.map((u,i)=>(
+              <div key={u.id} className="flex items-center gap-3 px-4 py-4 border-b border-white/5 last:border-0">
+                <div className={`w-9 h-9 rounded-xl grid place-items-center text-sm font-black shrink-0 ${i===0?'bg-gd text-ink-950':i===1?'bg-slate-300 text-ink-950':i===2?'bg-amber-600 text-white':'bg-white/8 text-slate-400'}`}>{i+1}</div>
+                <span className="text-2xl">{u.avatar}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-white">{u.name}</div>
+                  <div className="text-xs text-slate-500">{u.pts} pts · {u.acc}% acc</div>
+                </div>
+                <button onClick={()=>removeFriend(u.id)} className="press text-slate-600 hover:text-rose-400 transition-colors p-3 rounded-xl hover:bg-rose-500/10">
+                  <Ico name="user-minus" size={18}/>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── APP SHELL ── */
+function Shell(){
+  const{user,setNotifications}=useWC();
+  const[page,setPage]=useState(()=>{try{return localStorage.getItem('wc_page')||'home'}catch{return'home'}});
+  const[matchId,setMatchId]=useState(null);
+  const[bellOpen,setBellOpen]=useState(false);
+  const[hashJoinCode,setHashJoinCode]=useState(null);
+  useEffect(()=>{try{localStorage.setItem('wc_page',page)}catch{}},[page]);
+
+  // Detect #join:DATA or #friend:DATA in URL
+  useEffect(()=>{
+    const hash=window.location.hash;
+    if(!hash)return;
+    window.location.hash='';
+    // Tournament join link
+    const joinMatch=hash.match(/^#join[:-](.+)$/i);
+    if(joinMatch){setHashJoinCode(joinMatch[1]);setPage('tournament');return;}
+    // Friend request link
+    const friendMatch=hash.match(/^#friend[:-](.+)$/i);
+    if(friendMatch){
+      const data=decData(friendMatch[1]);
+      if(data&&data.name){
+        // Add a friend request notification — user accepts from bell
+        const fromId='url_'+(data.code||Date.now());
+        setNotifications(ns=>{
+          if(ns.some(n=>n.fromId===fromId&&n.type==='friendreq'&&!n.accepted))return ns;
+          return[{id:'fr'+Date.now(),type:'friendreq',fromId,fromName:data.name,fromAvatar:data.avatar||'⚽',
+            msg:`${data.name} wants to be your friend!`,read:false,time:'just now',accepted:false},...ns];
+        });
+        setBellOpen(true);
+      }
+    }
+  },[]);
+
+  if(!user)return<NameGate/>;
+  const goPage=p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'});};
+  const pages={home:<HomePage setPage={goPage} openMatch={setMatchId}/>,tournament:<TournamentPage autoJoinCode={hashJoinCode} onAutoJoinDone={()=>setHashJoinCode(null)}/>,matches:<MatchesPage openMatch={setMatchId}/>,leaderboard:<LeaderboardPage/>,friends:<FriendsPage/>,profile:<ProfilePage setPage={goPage} openMatch={setMatchId}/>,settings:<SettingsPage/>};
+
+  return(
+    <div className="min-h-screen flex">
+      <Sidebar page={page} setPage={goPage}/>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <Topbar page={page} setPage={goPage} setBellOpen={setBellOpen}/>
+        <main className="flex-1 px-4 sm:px-6 py-5 pb-28 lg:pb-6 max-w-5xl w-full mx-auto lg:mx-0 lg:max-w-none">
+          <div key={page} className="sup">{pages[page]||pages.home}</div>
+        </main>
+      </div>
+      <BottomTabs page={page} setPage={goPage}/>
+      {matchId&&<PredModal matchId={matchId} onClose={()=>setMatchId(null)}/>}
+      {bellOpen&&<BellPanel onClose={()=>setBellOpen(false)}/>}
+      <BadgePopup/>
+    </div>
+  );
+}
+
+function App(){return<Provider><Shell/></Provider>;}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
